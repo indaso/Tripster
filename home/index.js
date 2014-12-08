@@ -7,8 +7,9 @@ router.get('/', function(req, res) {
   res.render('index', { title: 'Tripster:Home' });
 });
 
-//router.get('/signup', function(req, res) {
-//  res.render('signup', { title: 'Tripster:Sign up' });
-//});
+
+router.get('/signup', function(req, res) {
+  res.render('signup', { title: 'Tripster:Sign up' });
+});
 
 module.exports = router;
