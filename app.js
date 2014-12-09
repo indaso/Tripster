@@ -6,6 +6,10 @@ var express = require('express');
  bodyParser = require('body-parser'),
  http = require('http');
 
+//Maintain user session
+app.use(express.cookieParser());
+app.use(express.session({secret: '1234567890QWERTY'}))
+
 //module dependencies
 var home_routes = require('./home/index');
 var login_routes = require('./user/login');
