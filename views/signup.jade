@@ -4,13 +4,24 @@ block content
 	h1 Sign up for Tripster
 	a(href="/") Home			
 	a(href="/login") Login
+	a(href="/signup") Signup
 
 	form(method='post')
 		p
-			label(for='email') Username
-			input(type='text', name='username')
+			label(for='fname') First Name
+			input(type='text', name='fname')
+		p 
+			label(for='lname') Last Name
+			input(type='text', name='lname')
+		p 
+			label(for='email') Email
+			input(type='text', name='email')
 		p
 			label(for='password') Password
 			input(type='password', name='password')
+		p
+			label(for='password') Reenter Password
+			input(type='password', name='password2')
+
 		input(type='submit')
   
