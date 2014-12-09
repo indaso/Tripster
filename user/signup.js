@@ -13,11 +13,11 @@ var connectData = {
 //Must handle successful and unsuccessful user creation
 //e.g. user email already exists in system -> forgot password
 router.post('/signup', function(req, res) {
-    var email = req.body.email;
+    var username = req.body.username;
     var password = req.body.password;
 
    	//check to see if correct user informaion
    	console.log("SIGNUP")
-   	console.log(email);
+   	console.log(username);
    	console.log(password);
 });

@@ -20,12 +20,12 @@ router.get('/login', function(req, res) {
 
 
 router.post('/login', function(req, res) {
-    var email = req.body.email;
+    var username = req.body.username;
     var password = req.body.password;
 
    	//Print for testing/building
    	console.log("LOGIN");
-   	console.log(email);
+   	console.log(username);
    	console.log(password);
 
     //Connect to database
@@ -34,7 +34,7 @@ router.post('/login', function(req, res) {
 
         //Query database for username's password
         //userid for testing
-        connection.execute("SELECT PASSWORD, USERID FROM USERS", [], function(err, results) {
+        connection.execute("SELECT PASSWORD, USER_ID FROM USERS", [], function(err, results) {
             if (err) {console.log("Error executing query:", err); return; }
 
             console.log(results);   //print for testing
