@@ -32,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //Specify rutes
 app.use('/', home_routes);
 app.use('/', login_routes);
+app.use('/', myprofile_routes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
