@@ -3,21 +3,64 @@ var router = express.Router();
 var oracle = require('oracle');
 
 var connectData = {
-  hostname: "ln -s libocci.dynlib.11.1 libocci.dynlib",
+  hostname: "tripsterdb.cmjcmauyxdtp.us-east-1.rds.amazonaws.com",
   port: 1521,
-  database: "xe",
+  database: "Wally",
   user: "masterusr",
   password: "CS450&frdS"
 };
 
-//Must handle successful and unsuccessful user creation
-//e.g. user email already exists in system -> forgot password
-router.post('/signup', function(req, res) {
-    var username = req.body.username;
-    var password = req.body.password;
-
-   	//check to see if correct user informaion
-   	console.log("SIGNUP")
-   	console.log(username);
-   	console.log(password);
+router.get('/signup', function(req, res) {
+  res.render("signup", {title: "Tripster: Signup", errormsg: "1"});
 });
+
+function create_user (name, username, email, password) {
+	console.log("here");
+	oracle.connect(connectData, function(err, connection) {
+   	if (err) {console.log("Error connecting to db:", err); return;}
+   		var q = "INSERT INTO USERS (USER_ID, PASSWORD, NAME, PRIVACY_CONTENT, EMAIL) VALUES";
+   		q = q + "('" + username + "', '" + password + "', '" +name + "', " + "'private'" + ", '" + email + "')";
+
+		connection.execute(q, [], function(err, results) {
+	 	   if (err) {console.log("Error executing query:", err); return; }
+
+     	   console.log(results);     //print for testing
+
+    	   connection.close();
+	    });
+	});
+}
+
+//Must handle successful and unsuccessful user creation
+//e.g. user email already exists in system 
+router.post('/signup', function(req, res) {
+	var name = req.body.fname + " " + req.body.lname;
+	var username = req.body.username;
+	var email = req.body.email;
+	var password = req.body.password;
+
+    var query = 'SELECT USER_ID FROM USERS WHERE USER_ID =' + "'" + username + "'";
+
+    oracle.connect(connectData, function(err, connection) {
+    	if (err) {console.log("Error connecting to db:", err); return;}
+
+	    connection.execute(query, [], function(err, results) {
+	        if (err) {console.log("Error executing query:", err); return; }
+
+	        console.log(results);     //print for testing
+
+	       	connection.close();
+	        if(results.length == 0) {
+	        	create_user(name, username, email, password);
+	        	res.redirect('/myprofile');
+	        	
+	        } else {
+	      		var mess = "Sorry, the username " + username + " has already been taken. Please try again.";
+	       		res.render("signup", {title: "Tripster: Signup Login Failed", errormsg: mess }); 
+	        }
+	    });
+	});
+});
+
+
+module.exports = router;
