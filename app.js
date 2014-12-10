@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//Specify rputes
+//Specify routes
 app.use('/', home_routes);
 app.use('/', login_routes);
 app.use('/', myprofile_routes);
