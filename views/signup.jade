@@ -1,10 +1,13 @@
 extends layout
 
 block content
-	h1 Sign up for Tripster
+	h1 #{title}
 	a(href="/") Home			
 	a(href="/login") Login
 	a(href="/signup") Signup
+
+	p -----------------
+	p #{errormsg}
 
 	form(method='post')
 		p
