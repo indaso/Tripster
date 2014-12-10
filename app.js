@@ -7,8 +7,8 @@ var express = require('express');
  http = require('http');
 
 //Maintain user session
-app.use(express.cookieParser());
-app.use(express.session({secret: '1234567890QWERTY'}))
+//app.use(express.cookieParser());
+//app.use(express.session({secret: '1234567890QWERTY'}))
 
 //module dependencies
 var home_routes = require('./home/index');
