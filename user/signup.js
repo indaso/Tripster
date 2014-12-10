@@ -20,15 +20,13 @@ function create_user (name, username, email, password) {
    	if (err) {console.log("Error connecting to db:", err); return;}
    		var q = "INSERT INTO USERS (USER_ID, PASSWORD, NAME, PRIVACY_CONTENT, EMAIL) VALUES";
    		q = q + "('" + username + "', '" + password + "', '" +name + "', " + "'private'" + ", '" + email + "')";
-  		//testing
-  		console.log(q);
 
 		connection.execute(q, [], function(err, results) {
 	 	   if (err) {console.log("Error executing query:", err); return; }
 
      	   console.log(results);     //print for testing
 
-    	   	connection.close();
+    	   connection.close();
 	    });
 	});
 }
@@ -42,7 +40,6 @@ router.post('/signup', function(req, res) {
 	var password = req.body.password;
 
     var query = 'SELECT USER_ID FROM USERS WHERE USER_ID =' + "'" + username + "'";
-    console.log('QUERY = ' + query);    //print for testing
 
     oracle.connect(connectData, function(err, connection) {
     	if (err) {console.log("Error connecting to db:", err); return;}
@@ -55,7 +52,6 @@ router.post('/signup', function(req, res) {
 	       	connection.close();
 	        if(results.length == 0) {
 	        	create_user(name, username, email, password);
-	        	console.log("asd;jaklsdf");
 	        	res.redirect('/myprofile');
 	        	
 	        } else {
