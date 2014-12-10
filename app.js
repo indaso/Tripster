@@ -13,6 +13,7 @@ var express = require('express');
 //module dependencies
 var home_routes = require('./home/index');
 var login_routes = require('./user/login');
+var myprofile_routes = require('./user/myprofile'); 
 
 var app = express();
 

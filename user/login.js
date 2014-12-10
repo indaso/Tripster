@@ -34,13 +34,16 @@ router.post('/login', function(req, res) {
 
         //Query database for username's password
         //userid for testing
-        var query = 'SELECT PASSWORD, USER_ID FROM USERS WHERE PASSWORD = ' + "'" + password + "'";
+        var query = 'SELECT PASSWORD, USER_ID FROM USERS WHERE PASSWORD = ' + "'" + password + "'" + "AND USER_ID = '" + username + "'";
         console.log('QUERY = ' + query); 
         connection.execute(query, [], function(err, results) {
             if (err) {console.log("Error executing query:", err); return; }
 
             console.log(results);   //print for testing
-            if(results.length == 1) console.log("SUCCESSFUL LOGIN")
+            if(results.length == 1) {
+              console.log("SUCCESSFUL LOGIN"); 
+              res.redirect('/myprofile');
+               }
               else console.log("WRONG")
 
             connection.close();     //close db connection after query
