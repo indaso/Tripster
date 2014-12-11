@@ -4,4 +4,13 @@ block content
 	if currUser.signed_in
 		p successfully 'logged in'
 		p Welcome #{currUser.username}
-  
+
+	h1 News Feed
+	ul
+		each val in friends
+			li=val.id
+			each t in val.trips
+				li=t.trip
+				each p in t.pics
+					img(src=p)=p
+
