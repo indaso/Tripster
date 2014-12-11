@@ -53,9 +53,10 @@ router.post('/login', function (req, res) {
       console.log(results); //print for testing
       if (results.length == 1) {
         currUser = new User(username, password);
-        currUser.signed_up = true;
+        currUser.signed_in = true;
         console.log("SUCCESSFUL LOGIN");
         console.log("User name=" + currUser.username + " User password=" + currUser.password);
+        console.log("User signed_in: " + currUser.signed_in);
         res.redirect('/myprofile');
       } else console.log("WRONG");
 

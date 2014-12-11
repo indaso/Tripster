@@ -6,7 +6,7 @@ block content
 	a(href="/friendrequests") Pending Friend Requests
 
 	h1 My Profile
-	if currUser.signed_up
+	if currUser.signed_in
 		p Welcome #{currUser.username}
 
 		p
@@ -17,3 +17,11 @@ block content
 		p 	Affiliation: #{affiliation}
 		p 	Email: #{email}
 		p 	Interest: #{interests}
+	h1 News Feed
+	ul
+		each val in friends
+			li=val.id
+			each t in val.trips
+				li=t.trip
+				each p in t.pics
+					img(src=p)=p
