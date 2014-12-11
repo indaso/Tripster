@@ -1,7 +1,18 @@
 extends layout
 block content
-	h1 myprofile
-	if currUser.signed_in
-		p successfully 'logged in'
+	a(href="/") Home			
+	a(href="/myprofile") My Profile
+	a(href="/addfriends") Add Friends
+
+	h1 My Profile
+	if currUser.signed_up
 		p Welcome #{currUser.username}
-  
+
+		p
+			a(href="/editprofile") edit my profile
+
+		p 	Username: #{username}
+		p 	Name: #{name}
+		p 	Affiliation: #{affiliation}
+		p 	Email: #{email}
+		p 	Interest: #{interests}

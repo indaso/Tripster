@@ -1,0 +1,24 @@
+extends layout
+block content
+	a(href="/") Home			
+	a(href='/myprofile') MyProfile	
+	a(href="/addfriends") Add Friends
+
+	h1 Edit My Profile
+
+	form(method='post')
+		p
+			Username: #{username}
+		p
+			label(for='name') Name:
+			input(type='text', name='name', value="#{name}")
+		p
+			label(for='email') Email:
+			input(type='text', name='email', value="#{email}")
+		p
+			label(for='affiliation') Affiliation:
+			input(type='text', name='affiliation', value="#{affiliation}")
+		p
+			label(for='interests') Interests:
+			input(type='text', name='interests', value="#{interests}")
+	input(type='submit')

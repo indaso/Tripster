@@ -13,7 +13,7 @@ var connectData = {
 };
 
 router.get('/signup', function(req, res) {
-  res.render("signup", {title: "Tripster: Signup", errormsg: "1"});
+  res.render("signup", {title: "Tripster: Signup", errormsg: ""});
 });
 
 function create_user (name, username, email, password) {
@@ -53,8 +53,9 @@ router.post('/signup', function(req, res) {
 
 	       	connection.close();
 	        if(results.length == 0) {
-	        	//create_user(name, username, email, password);
-	        	global.currUser = username;
+	        	create_user(name, username, email, password);
+	        	global.currUser.username = username;
+	        	global.currUser.signed_up = true;
 	        	res.redirect('/signupcomplete');
 	        	
 	        } else {
@@ -73,7 +74,7 @@ router.get('/signupcomplete', function(req, res) {
 });
 
 router.post('/signupcomplete', function(req, res) {
-	var username = global.currUser;
+	var username = global.currUser.username;
 	var affiliation = req.body.affiliation;
 	var interests = req. body.interests;
 	console.log(username);

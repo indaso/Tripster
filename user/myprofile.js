@@ -14,10 +14,104 @@ var connectData = {
   password: "CS450&frdS"
 };
 
+//If user is logged in, get his profile information from the database and populate the editprofile.jade page
 router.get('/myprofile', function(req, res) {
-  res.render('myprofile', { title: 'Tripster:MyProfile' });
+	if (currUser.signed_up) {
+		var email;
+		var affiliation;
+		var interests;
+		var name;
+
+		//get user's information from the database
+		oracle.connect(connectData, function(err, connection) {
+    		if (err) {console.log("Error connecting to db:", err); return;}
+    		var query = "SELECT * FROM USERS WHERE USER_ID='" + global.currUser.username + "'";
+	    	connection.execute(query, [], function(err, results) {
+	     	   if (err) {console.log("Error executing query:", err); return; }
+
+	    	    console.log(results[0].EMAIL);     //print for testing
+
+	    	    email = results[0].EMAIL;
+	    	    name = results[0].NAME;
+	    	    affiliation = results[0].AFFILIATION;
+	    	    interests = results[0].INTERESTS;
+
+	    	    //check to see if values are null or undefined
+	    	    if (!email)  
+	    	    	email = ""; 
+	    	    if (!name)
+	    	    	name = "";
+	    	    if (!affiliation)
+	    	    	affiliation ="";
+	    	    if (!interests)
+	    	    	interests = "";
+
+	    	   	connection.close();
+				
+				//pass values to the client
+				res.render('myprofile', { title: 'Tripster:MyProfile', username: global.currUser.username,
+				name: name, email: email, affiliation: affiliation, interests: interests});
+	    	   });
+		});
+	} else {
+		//if not logged in, redirect to login page
+		res.redirect('/login');
+	}
 });
 
+
+
+//If user is logged in, get his profile information from the database and populate the editprofile.jade page
+router.get('/editprofile', function(req, res) {
+	if (currUser.signed_up) {
+		var email;
+		var affiliation;
+		var interests;
+		var name;
+
+		//get user's information from the database
+		oracle.connect(connectData, function(err, connection) {
+    		if (err) {console.log("Error connecting to db:", err); return;}
+    		var query = "SELECT * FROM USERS WHERE USER_ID='" + global.currUser.username + "'";
+	    	connection.execute(query, [], function(err, results) {
+	     	   if (err) {console.log("Error executing query:", err); return; }
+
+	    	    console.log(results);     //print for testing
+
+	    	    email = results[0].EMAIL;
+	    	    name = results[0].NAME;
+	    	    affiliation = results[0].AFFILIATION;
+	    	    interests = results[0].INTERESTS;
+
+	    	    //check to see if values are null or undefined
+	    	    if (!email)  
+	    	    	email = ""; 
+	    	    if (!name)
+	    	    	name = "";
+	    	    if (!affiliation)
+	    	    	affiliation ="";
+	    	    if (!interests)
+	    	    	interests = "";
+
+	    	   	//pass values to the client
+				res.render('editprofile', { title: 'Tripster:Edit My Profile', username: global.currUser.username,
+				name: name, email: email, affiliation: affiliation, interests: interests});
+
+
+	    	   	connection.close();
+	    	});
+		});
+	} else {
+		//if not logged in, redirect to login page
+		res.redirect('/login');
+	}
+});
+
+//Edit My Profile
+router.post('/editprofile', function(req, res) {
+	console.log("HERE");
+	
+});
 
 
 
@@ -28,7 +122,7 @@ router.get('/addfriends', function(req,res) {
 });
 
 router.post('/addfriends', function(req, res) {
-	//var friender = your username
+	var friender = currUser.username;
 	var friendee = req.body.friendee;
 
 	//Validate that person you are trying to friend exists
@@ -48,10 +142,7 @@ router.post('/addfriends', function(req, res) {
 	        	//Person does not exist
 	        	var mess = "Sorry, we were not able to find: " + friendee + " in out database. Please try again";
 	       		res.render("addfriends", {errormsg: mess });
-	       		//else if user is self
-	       		//else if users are already friendspiazza
-
-	        } else if (results[0].USER_ID == "jenhu") {	//replace with friender usernamer
+	        } else if (friendee== friender) {	//replace with friender usernamer
 				var mess = "Sorry, you cannot add yourself";
 				res.render("addfriends", {errormsg: mess});
 	        } 
@@ -59,8 +150,7 @@ router.post('/addfriends', function(req, res) {
 	        	oracle.connect(connectData, function(err, connection) {
     				if (err) {console.log("Error connecting to db:", err); return;}
    						//check if friend pair or friend request already exists
-   						//replace jenhu with username
-    					var friended = "SELECT * FROM FRIENDS_WITH WHERE FRIEND_ID1 = '" + "jenhu" + "' AND FRIEND_ID2 = '" + friendee + "'";
+    					var friended = "SELECT * FROM FRIENDS_WITH WHERE FRIEND_ID1 = '" + friender + "' AND FRIEND_ID2 = '" + friendee + "'";
     					console.log(friended);
     					connection.execute(friended, [], function(err, results) {
 					    	if (err) {console.log("Error executing query:", err); return; }
@@ -82,8 +172,7 @@ router.post('/addfriends', function(req, res) {
 
 						//Place friend request in database
     					var createreq = "INSERT INTO FRIENDS_WITH (FRIEND_ID1, FRIEND_ID2, ACCEPTED) VALUES";
-    					createreq = createreq + "('" + "jenhu" + "', '" + friendee + "', " + 0 + ")";
-							//replace jenhu w/ friender    					
+    					createreq = createreq + "('" + friender + "', '" + friendee + "', " + 0 + ")"; 					
     					console.log(createreq);
 					    connection.execute(createreq, [], function(err, results) {
 					        if (err) {console.log("Error executing query:", err); return; }
