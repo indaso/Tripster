@@ -484,5 +484,64 @@ router.post('/addfriends', function (req, res) {
 
 
 //Get users friend requests
+router.get('/friendrequests', function(req,res) {
+	if (currUser.signed_in) {	
+		//get pending requests from the database
+		oracle.connect(connectData, function(err, connection) {
+    		if (err) {console.log("Error connecting to db:", err); return;}
+    		var query = "SELECT * FROM FRIENDS_WITH WHERE FRIEND_ID2='" + currUser.username + "'";
+    		query = query + "AND ACCEPTED = 0";
+	    	connection.execute(query, [], function(err, results) {
+	     		if (err) {console.log("Error executing query:", err); return; }
+				console.log(results);	
+				connection.close();     	   
+
+				if (results.length == 0) {
+					res.render('friendrequests', {requests:[], message:"You have no friend requests at the moment"});
+				} else {
+	     	   		var requesters = [];
+	     	   		for (i = 0; i < results.length; i++) {
+	     	   			requesters[i] = results[i].FRIEND_ID1;
+	     	   		}
+	     	   		console.log(requesters);
+	     	   		console.log(requesters.length);
+	     	   		res.render('friendrequests', {requests:requesters, message:"Here are your friend requests"});
+	     	   	}
+	     	});
+		});
+	} else {
+		//if not logged in, redirect to login page
+		res.redirect('/login');
+	}
+});
+
+
+//Accept/Reject User friend requests
+router.post('/friendrequests', function(req, res) {
+	var friendee = currUser.username;
+	var friender = req.body.requester;
+
+	//Validate that person you are trying to friend exists
+	var query = "UPDATE FRIENDS_WITH SET ACCEPTED=1 WHERE FRIEND_ID1='" + friender +"' AND FRIEND_ID2='" + friendee + "'";
+    oracle.connect(connectData, function(err, connection) {
+    	if (err) {console.log("Error connecting to db:", err); return;}
+
+	    connection.execute(query, [], function(err, results) {
+	        if (err) {console.log("Error executing query:", err); return; }
+
+	        console.log(results);     //print for testing
+
+	       	connection.close();
+	       	res.redirect('friendrequests');
+	    });
+	});
+});
+
+
+//Log out
+router.get('/logout', function(req,res) {
+	currUser.signed_in=false;
+	res.render('logout');
+});
 
 module.exports = router;

@@ -1,10 +1,24 @@
 extends layout
 block content
+block content
 	a(href="/") Home			
 	a(href='/myprofile') MyProfile	
 	a(href="/addfriends") Add Friends
+	a(href="/logout") Logout
+
 
 	h1 My Friend Requests
+ 
+	p #{message}
 
-	form(method='post')
+	ul 
+		each r in requests
+			li=  r 
+			form(method='post')
+				p To accept his/her friend request:
+				input(type='hidden', name='requester', value=r)
+				input(type='submit', value="submit", )
+
+
+
 
