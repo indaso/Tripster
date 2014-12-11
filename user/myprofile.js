@@ -483,6 +483,7 @@ router.post('/addfriends', function (req, res) {
 });
 
 
+
 //Get users friend requests
 router.get('/friendrequests', function(req,res) {
 	if (currUser.signed_in) {	
@@ -493,10 +494,12 @@ router.get('/friendrequests', function(req,res) {
     		query = query + "AND ACCEPTED = 0";
 	    	connection.execute(query, [], function(err, results) {
 	     		if (err) {console.log("Error executing query:", err); return; }
+	     		console.log("-----------------------------");
 				console.log(results);	
 				connection.close();     	   
 
 				if (results.length == 0) {
+					console.log("I am here");
 					res.render('friendrequests', {requests:[], message:"You have no friend requests at the moment"});
 				} else {
 	     	   		var requesters = [];
@@ -520,21 +523,39 @@ router.get('/friendrequests', function(req,res) {
 router.post('/friendrequests', function(req, res) {
 	var friendee = currUser.username;
 	var friender = req.body.requester;
+	var response = req.body.response;
 
-	//Validate that person you are trying to friend exists
-	var query = "UPDATE FRIENDS_WITH SET ACCEPTED=1 WHERE FRIEND_ID1='" + friender +"' AND FRIEND_ID2='" + friendee + "'";
-    oracle.connect(connectData, function(err, connection) {
-    	if (err) {console.log("Error connecting to db:", err); return;}
+	if (response=="accept") {
+		//Validate that person you are trying to friend exists
+		var query = "UPDATE FRIENDS_WITH SET ACCEPTED=1 WHERE FRIEND_ID1='" + friender +"' AND FRIEND_ID2='" + friendee + "'";
+	    oracle.connect(connectData, function(err, connection) {
+	    	if (err) {console.log("Error connecting to db:", err); return;}
 
-	    connection.execute(query, [], function(err, results) {
-	        if (err) {console.log("Error executing query:", err); return; }
+		    connection.execute(query, [], function(err, results) {
+		        if (err) {console.log("Error executing query:", err); return; }
 
-	        console.log(results);     //print for testing
+		        console.log(results);     //print for testing
 
-	       	connection.close();
-	       	res.redirect('friendrequests');
-	    });
-	});
+		       	connection.close();
+		       	res.redirect('friendrequests');
+		    });
+		});
+	} else if (response=="reject") {
+		//Validate that person you are trying to friend exists
+		var query = "DELETE FROM FRIENDS_WITH WHERE FRIEND_ID1='" + friender +"' AND FRIEND_ID2='" + friendee + "'";
+	    oracle.connect(connectData, function(err, connection) {
+	    	if (err) {console.log("Error connecting to db:", err); return;}
+
+		    connection.execute(query, [], function(err, results) {
+		        if (err) {console.log("Error executing query:", err); return; }
+
+		        console.log(results);     //print for testing
+
+		       	connection.close();
+		       	res.redirect('friendrequests');
+		    });
+		});		
+	}
 });
 
 
