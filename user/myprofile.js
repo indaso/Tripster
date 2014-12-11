@@ -174,7 +174,8 @@ router.post('/addfriends', function(req, res) {
 	        	oracle.connect(connectData, function(err, connection) {
     				if (err) {console.log("Error connecting to db:", err); return;}
    						//check if friend pair or friend request already exists
-    					var friended = "SELECT * FROM FRIENDS_WITH WHERE FRIEND_ID1 = '" + friender + "' AND FRIEND_ID2 = '" + friendee + "'";
+    					var friended = "SELECT * FROM FRIENDS_WITH WHERE (FRIEND_ID1 = '" + friender + "' AND FRIEND_ID2 = '" + friendee + "')";
+    					friended = friended + "OR (FRIEND_ID1 = '" + friendee + "' AND FRIEND_ID2 = '" + friender + "'";
     					console.log(friended);
     					connection.execute(friended, [], function(err, results) {
 					    	if (err) {console.log("Error executing query:", err); return; }
@@ -210,5 +211,8 @@ router.post('/addfriends', function(req, res) {
 	    });
 	});
 });
+
+
+//Get users friend requests
 
 module.exports = router;
