@@ -17,7 +17,6 @@ router.get('/signup', function(req, res) {
 });
 
 function create_user (name, username, email, password) {
-	console.log("here");
 	oracle.connect(connectData, function(err, connection) {
    	if (err) {console.log("Error connecting to db:", err); return;}
    		var q = "INSERT INTO USERS (USER_ID, PASSWORD, NAME, PRIVACY_CONTENT, EMAIL) VALUES";

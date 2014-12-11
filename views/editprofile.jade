@@ -5,10 +5,10 @@ block content
 	a(href="/addfriends") Add Friends
 
 	h1 Edit My Profile
-
-	form(method='post')
 		p
 			Username: #{username}
+
+	form(method='post')
 		p
 			label(for='name') Name:
 			input(type='text', name='name', value="#{name}")
@@ -21,4 +21,4 @@ block content
 		p
 			label(for='interests') Interests:
 			input(type='text', name='interests', value="#{interests}")
-	input(type='submit')
+		input(type='submit')

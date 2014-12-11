@@ -68,7 +68,7 @@ router.get('/editprofile', function(req, res) {
 		var affiliation;
 		var interests;
 		var name;
-
+		
 		//get user's information from the database
 		oracle.connect(connectData, function(err, connection) {
     		if (err) {console.log("Error connecting to db:", err); return;}
@@ -109,12 +109,36 @@ router.get('/editprofile', function(req, res) {
 
 //Edit My Profile
 router.post('/editprofile', function(req, res) {
-	console.log("HERE");
-	
+	if (currUser.signed_up) {
+		var email = req.body.email;
+		var affiliation = req.body.affiliation;
+		var interests = req.body.interests;
+		var name = req.body.name;
+
+
+		//Update users information
+		oracle.connect(connectData, function(err, connection) {
+	    	if (err) {console.log("Error connecting to db:", err); return;}
+
+	   	 	var query = "UPDATE USERS SET EMAIL='" + email +"', NAME='" + name + "', AFFILIATION='";
+	   	 	query = query + affiliation + "', INTERESTS='" + interests + "' WHERE USER_ID='" + currUser.username + "'";
+	   	 	console.log(query);
+
+	    	connection.execute(query, [], function(err, results) {
+	    		if (err) {console.log("Error executing query:", err); return; }
+
+	    	    console.log(results);     //print for testing
+	    	   	connection.close();
+	    	   });
+		});
+
+		//pass values to the client
+		res.redirect('/myprofile');
+	} else {
+	//if not logged in, redirect to login page
+	res.redirect('/login');
+	}
 });
-
-
-
 
 
 router.get('/addfriends', function(req,res) {
