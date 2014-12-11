@@ -26,7 +26,7 @@ oracle.connect(connectData, function (err, connection) {
     return;
   }
 
-  var sql1 = 'SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = ' + "'" + 'gsn' + "'";
+  var sql1 = 'SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = ' + "'" + "gsn" + "'";
 
   console.log('QUERY = ' + sql1);
   connection.execute(sql1, [], function (err, results) {
@@ -39,13 +39,9 @@ oracle.connect(connectData, function (err, connection) {
       var resul = results[i].FRIEND_ID2;
       console.log(resul);
       friends.push(resul);
-
-
     }
     connection.close();
   });
-
-
 });
 
 
@@ -63,7 +59,7 @@ router.post('/myprofile', function (req, res) {
   var userid = 'gsn';
   var tripid = tripsize;
   var planid = 1;
-  var privacycontent = 'Public';
+  var privacycontent = "'public'";
   var locationname = req.body.locationname;
   var locationtype = req.body.locationtype;
   var invitees = req.body.Invitees;
@@ -89,8 +85,6 @@ router.post('/myprofile', function (req, res) {
       if (results < 15000) tripid = 15000;
       else tripid = results + 1;
       console.log('getting tripid = ' + tripid);
-
-      connection.close();
       return tripid;
     });
 
@@ -106,9 +100,9 @@ router.post('/myprofile', function (req, res) {
       console.log('locationid');
       locationid = results + 1;
 
-      var tripquery = "INSERT INTO TRIPS (TRIP_ID, LOCATION_ID,PRIVACY_CONTENT) values (" + tripid +
-        ", " + locationid + ", " + privacycontent + ")";
-      connection.execute(tripquery, [], function callback(err, results) {
+      var tripquery = 'INSERT INTO TRIPS VALUES(' + tripid +
+        ', ' + locationid + ', ' + privacycontent + ')';
+      connection.execute(tripquery, [], function (err, results) {
         console.log('attempting query: ' + tripquery);
         if (err) {
           console.log("Error connecting to db:", err);
@@ -120,6 +114,57 @@ router.post('/myprofile', function (req, res) {
         connection.close();
 
       });
+      //for table Location
+      var sql1 = "INSERT INTO LOCATION (LOCATION_ID, LOCATION_NAME, LOCATION_TYPE) VALUES";
+      sql1 = sql1 + "(" + locationid + ", '" + locationname + "', '" + locationtype + "')";
+      connection.execute(sql1, [], function (err, results) {
+        console.log('attempting query: ' + sql1);
+        if (err) {
+          console.log("Error connecting to db:", err);
+          return;
+        }
+
+        console.log(sql1 + "EXECUTED");
+
+        connection.close();
+
+      });
+
+      //for table Plans
+      var planquery = "INSERT INTO PLANS values(" + userid + ", " +
+        tripid + ", " + planid + ")";
+      connection.execute(planquery, [], function (err, results) {
+        console.log('attempting query: ' + planquery);
+        if (err) {
+          console.log("Error connecting to db:", err);
+          return;
+        }
+
+        console.log(planquery + "EXECUTED");
+
+        connection.close();
+
+      });
+
+      if (invitees !== '') {
+        var invquery = "INSERT INTO INVITES values(" +
+          userid + ", '" + invitees + "', " + tripid + ")";
+        connection.execute(invquery, [], function (err, results) {
+          console.log('attempting query: ' + invquery);
+          if (err) {
+            console.log("Error connecting to db:", err);
+            return;
+          }
+
+          console.log(invquery + "EXECUTED");
+
+          connection.close();
+
+        });
+
+      }
+
+
     });
   });
   //for table Trips
