@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var oracle = require('oracle');
+global.User = require('./user');
+global.currUser = new User();
 
 var connectData = {
   hostname: "tripsterdb.cmjcmauyxdtp.us-east-1.rds.amazonaws.com",
@@ -51,8 +53,9 @@ router.post('/signup', function(req, res) {
 
 	       	connection.close();
 	        if(results.length == 0) {
-	        	create_user(name, username, email, password);
-	        	res.redirect('/myprofile');
+	        	//create_user(name, username, email, password);
+	        	global.currUser = username;
+	        	res.redirect('/signupcomplete');
 	        	
 	        } else {
 	      		var mess = "Sorry, the username " + username + " has already been taken. Please try again.";
@@ -62,5 +65,38 @@ router.post('/signup', function(req, res) {
 	});
 });
 
+
+
+
+router.get('/signupcomplete', function(req, res) {
+  res.render("signupcomplete");
+});
+
+router.post('/signupcomplete', function(req, res) {
+	var username = global.currUser;
+	var affiliation = req.body.affiliation;
+	var interests = req. body.interests;
+	console.log(username);
+	console.log(affiliation);
+	console.log(interests);
+
+    var query = "UPDATE USERS SET AFFILIATION='"+ affiliation +"', INTERESTS='" + interests+ "'";
+    query = query +  "WHERE USER_ID ='" + username + "'";
+
+    oracle.connect(connectData, function(err, connection) {
+    	if (err) {console.log("Error connecting to db:", err); return;}
+
+	    connection.execute(query, [], function(err, results) {
+	        if (err) {console.log("Error executing query:", err); return; }
+
+	        console.log(results);     //print for testing
+
+	       	connection.close();
+     		res.render("myprofile", {title: "Tripster: Profile" }); 
+	    });
+	});
+})
+
+module.exports = router;
 
 module.exports = router;

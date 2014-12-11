@@ -1,0 +1,21 @@
+extends layout
+
+block content
+	h1 #{title}
+	a(href="/") Home			
+	a(href="/myprofile") 
+
+	p -----------------
+
+	form(method='post')
+		h1 Account created! Please finish your profile 
+
+		p 
+			label(for='Affiliation') Affiliation: (UPenn, Phildelphia, etc.)
+			input(type='text', name='affiliation')
+
+		p 
+			label(for='Interest') Interests:
+			input(type='text', name='interests')
+
+		input(type='submit')
