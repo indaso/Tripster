@@ -22,30 +22,7 @@ var connectData = {
 	password: "CS450&frdS"
 };
 
-oracle.connect(connectData, function (err, connection) {
-	if (err) {
-		console.log("Error connecting to db:", err);
-		return;
-	}
 
-	var sql1 = 'SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = ' + "'" + global.currUser.username + "'";
-
-	console.log('QUERY = ' + sql1);
-	connection.execute(sql1, [], function (err, results) {
-		if (err) {
-			console.log("Error executing query:", err);
-			return;
-		}
-
-		for (var i = 0; i < results.length; i++) {
-			var resul = results[i].FRIEND_ID2;
-			console.log(resul);
-			dropdown.push(resul);
-
-		}
-		connection.close();
-	});
-});
 
 //If user is logged in, get his profile information from the database and populate the editprofile.jade page
 
@@ -71,10 +48,35 @@ function contains(arr, elem) {
 }
 
 router.get('/myprofile', function (req, res) {
-
+	console.log("Router.get ran");
 
 	var query = "";
 	if (global.currUser.signed_in) {
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+
+			var sql1 = 'SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = ' + "'" + global.currUser.username + "'";
+
+			console.log('QUERY = ' + sql1);
+			connection.execute(sql1, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+
+				for (var i = 0; i < results.length; i++) {
+					var resul = results[i].FRIEND_ID2;
+					console.log("Friend: " + resul);
+					dropdown.push(resul);
+
+				}
+				connection.close();
+			});
+		});
+
 		var email;
 		var affiliation;
 		var interests;
