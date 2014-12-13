@@ -20,17 +20,14 @@ block content
 		p 	Email: #{email}
 		p 	Interest: #{interests}
 	h1 News Feed
-	ul
+	p
 		each val in friends
 			li=val.id
 			each t in val.trips
 				li=t.trip
 				each p in t.pics
-					img(src=p)=p
-	h1 myprofile
-	p successfully 'logged in'
-	a(href='/myprofile/') MyProfile
-	p Plan a Trip! 
+					img(src=p, width = '150', height = '130')=p
+	h1 Plan a Trip! 
 
 
   
@@ -50,11 +47,11 @@ block content
 			input(type='radio', name='privacycontent')
 
 		p
-			label(for='Invitees') Who would you like to invite? 
-			select(name='Invitees')
+			label(for='invitees') Who would you like to invite? 
+			select(name='invitees')
 				option(value='')
 				each invitee in invitees
-					- var select=null; 
+					//- var select=null; 
 					option(value=invitee, selected=select)= invitee
 
 		p

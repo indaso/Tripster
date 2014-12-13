@@ -5,6 +5,8 @@ var express = require('express');
 var router = express.Router();
 var oracle = require('oracle');
 //global.friends = [];
+var friends = [];
+var dropdown = [];
 
 
 
@@ -20,33 +22,35 @@ var connectData = {
 	password: "CS450&frdS"
 };
 
-var friends = [];
 oracle.connect(connectData, function (err, connection) {
-  if (err) {
-    console.log("Error connecting to db:", err);
-    return;
-  }
+	if (err) {
+		console.log("Error connecting to db:", err);
+		return;
+	}
 
-  var sql1 = 'SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = ' + "'" + "gsn" + "'";
+	var sql1 = 'SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = ' + "'" + global.currUser.username + "'";
 
-  console.log('QUERY = ' + sql1);
-  connection.execute(sql1, [], function (err, results) {
-    if (err) {
-      console.log("Error executing query:", err);
-      return;
-    }
+	console.log('QUERY = ' + sql1);
+	connection.execute(sql1, [], function (err, results) {
+		if (err) {
+			console.log("Error executing query:", err);
+			return;
+		}
 
-    for (var i = 0; i < results.length; i++) {
-      var resul = results[i].FRIEND_ID2;
-      console.log(resul);
-      friends.push(resul);
-    }
-    connection.close();
-  });
+		for (var i = 0; i < results.length; i++) {
+			var resul = results[i].FRIEND_ID2;
+			console.log(resul);
+			dropdown.push(resul);
+
+		}
+		connection.close();
+	});
+});
+
 //If user is logged in, get his profile information from the database and populate the editprofile.jade page
 
 var uniqueFriends = [];
-uniquePics = [];
+var uniquePics = [];
 
 function friendObj() {}
 
@@ -67,8 +71,10 @@ function contains(arr, elem) {
 }
 
 router.get('/myprofile', function (req, res) {
+
+
 	var query = "";
-	if (currUser.signed_in) {
+	if (global.currUser.signed_in) {
 		var email;
 		var affiliation;
 		var interests;
@@ -115,6 +121,7 @@ router.get('/myprofile', function (req, res) {
 		res.redirect('/login');
 	}
 
+
 	oracle.connect(connectData, function (err, connection) {
 		if (err) {
 			console.log("Error connecting to db:", err);
@@ -131,7 +138,7 @@ router.get('/myprofile', function (req, res) {
 			"INNER JOIN INCLUDES I ON I.ALBUM_ID=H.ALBUM_ID " +
 			"INNER JOIN CONTENT C ON C.CONTENT_ID=I.CONTENT_ID " +
 			"WHERE FW.ACCEPTED=1 " +
-			"AND FW.FRIEND_ID1='" + currUser.username + "'";
+			"AND FW.FRIEND_ID1='" + global.currUser.username + "'";
 		console.log('QUERY = ' + query);
 		connection.execute(query, [], function (err, results) {
 			if (err) {
@@ -139,7 +146,7 @@ router.get('/myprofile', function (req, res) {
 				return;
 			}
 
-			qresults = results;
+			var qresults = results;
 
 			// first get each friend
 
@@ -206,25 +213,27 @@ router.get('/myprofile', function (req, res) {
 
 
 
-			console.log("uniqueTrips length: " + uniqueTrips.length);
+			/*console.log("uniqueTrips length: " + uniqueTrips.length);
 			console.log("uniqueFriendsIds length " + uniqueFriendsIds.length);
-			console.log("uniquePics length" + uniquePics.length);
+			console.log("uniquePics length" + uniquePics.length);*/
 
 			// for each person, print out their trips for testing
-			for (var i = 0; i < uniqueFriends.length; i++) {
-				for (var j = 0; j < uniqueFriends[i].trips.length; j++) {
-					console.log("Friend: " + uniqueFriends[i].id);
-					console.log("Trip: " + uniqueFriends[i].trips[j].trip);
-					console.log("Trip Pictures: " + uniqueFriends[i].trips[j].pics);
-				}
-			}
-
+			/*			for (var i = 0; i < uniqueFriends.length; i++) {
+							for (var j = 0; j < uniqueFriends[i].trips.length; j++) {
+								console.log("Friend: " + uniqueFriends[i].id);
+								console.log("Trip: " + uniqueFriends[i].trips[j].trip);
+								console.log("Trip Pictures: " + uniqueFriends[i].trips[j].pics);
+							}
+						}
+			*/
 			friends = uniqueFriends;
-			console.log("Friends array: " + friends);
-			console.log("Friends length: " + friends.length);
+			//console.log("Friends array: " + friends);
+			//console.log("Friends length: " + friends.length);
 			//console.log("Friends[0]: " + friends[0].id);
 
 			//console.log(results); //print for testing
+
+
 
 			res.render('myprofile', {
 				title: 'Tripster:MyProfile',
@@ -233,15 +242,18 @@ router.get('/myprofile', function (req, res) {
 				email: email,
 				affiliation: affiliation,
 				interests: interests,
-				friends: friends
+				friends: friends,
+				invitees: dropdown
+
 			});
+
 		});
 	});
 });
 
 //If user is logged in, get his profile information from the database and populate the editprofile.jade page
 router.get('/editprofile', function (req, res) {
-	if (currUser.signed_in) {
+	if (global.currUser.signed_in) {
 		var email;
 		var affiliation;
 		var interests;
@@ -299,7 +311,7 @@ router.get('/editprofile', function (req, res) {
 
 //Edit My Profile
 router.post('/editprofile', function (req, res) {
-	if (currUser.signed_in) {
+	if (global.currUser.signed_in) {
 		var email = req.body.email;
 		var affiliation = req.body.affiliation;
 		var interests = req.body.interests;
@@ -314,7 +326,7 @@ router.post('/editprofile', function (req, res) {
 			}
 
 			var query = "UPDATE USERS SET EMAIL='" + email + "', NAME='" + name + "', AFFILIATION='";
-			query = query + affiliation + "', INTERESTS='" + interests + "' WHERE USER_ID='" + currUser.username +
+			query = query + affiliation + "', INTERESTS='" + interests + "' WHERE USER_ID='" + global.currUser.username +
 				"'";
 			console.log(query);
 
@@ -335,7 +347,7 @@ router.post('/editprofile', function (req, res) {
 		//if not logged in, redirect to login page
 		res.redirect('/login');
 	}
-	connection.close(); //close db connection after query
+	//connection.close(); //close db connection after query
 
 });
 
@@ -348,7 +360,7 @@ router.get('/addfriends', function (req, res) {
 });
 
 router.post('/addfriends', function (req, res) {
-	var friender = currUser.username;
+	var friender = global.currUser.username;
 	router.post('/addfriends', function (req, res) {
 		//var friender = your username
 		var friendee = req.body.friendee;
@@ -513,32 +525,44 @@ router.post('/addfriends', function (req, res) {
 
 
 //Get users friend requests
-router.get('/friendrequests', function(req,res) {
-	if (currUser.signed_in) {	
+router.get('/friendrequests', function (req, res) {
+	if (global.currUser.signed_in) {
 		//get pending requests from the database
-		oracle.connect(connectData, function(err, connection) {
-    		if (err) {console.log("Error connecting to db:", err); return;}
-    		var query = "SELECT * FROM FRIENDS_WITH WHERE FRIEND_ID2='" + currUser.username + "'";
-    		query = query + "AND ACCEPTED = 0";
-	    	connection.execute(query, [], function(err, results) {
-	     		if (err) {console.log("Error executing query:", err); return; }
-	     		console.log("-----------------------------");
-				console.log(results);	
-				connection.close();     	   
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+			var query = "SELECT * FROM FRIENDS_WITH WHERE FRIEND_ID2='" + global.currUser.username + "'";
+			query = query + "AND ACCEPTED = 0";
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+				console.log("-----------------------------");
+				console.log(results);
+				connection.close();
 
-				if (results.length == 0) {
+				if (results.length === 0) {
 					console.log("I am here");
-					res.render('friendrequests', {requests:[], message:"You have no friend requests at the moment"});
+					res.render('friendrequests', {
+						requests: [],
+						message: "You have no friend requests at the moment"
+					});
 				} else {
-	     	   		var requesters = [];
-	     	   		for (i = 0; i < results.length; i++) {
-	     	   			requesters[i] = results[i].FRIEND_ID1;
-	     	   		}
-	     	   		console.log(requesters);
-	     	   		console.log(requesters.length);
-	     	   		res.render('friendrequests', {requests:requesters, message:"Here are your friend requests"});
-	     	   	}
-	     	});
+					var requesters = [];
+					for (var i = 0; i < results.length; i++) {
+						requesters[i] = results[i].FRIEND_ID1;
+					}
+					console.log(requesters);
+					console.log(requesters.length);
+					res.render('friendrequests', {
+						requests: requesters,
+						message: "Here are your friend requests"
+					});
+				}
+			});
 		});
 	} else {
 		//if not logged in, redirect to login page
@@ -548,167 +572,180 @@ router.get('/friendrequests', function(req,res) {
 
 
 //Accept/Reject User friend requests
-router.post('/friendrequests', function(req, res) {
-	var friendee = currUser.username;
+router.post('/friendrequests', function (req, res) {
+	var friendee = global.currUser.username;
 	var friender = req.body.requester;
 	var response = req.body.response;
 
-	if (response=="accept") {
+	if (response == "accept") {
 		//Validate that person you are trying to friend exists
-		var query = "UPDATE FRIENDS_WITH SET ACCEPTED=1 WHERE FRIEND_ID1='" + friender +"' AND FRIEND_ID2='" + friendee + "'";
-	    oracle.connect(connectData, function(err, connection) {
-	    	if (err) {console.log("Error connecting to db:", err); return;}
+		var query = "UPDATE FRIENDS_WITH SET ACCEPTED=1 WHERE FRIEND_ID1='" + friender + "' AND FRIEND_ID2='" + friendee +
+			"'";
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
 
-		    connection.execute(query, [], function(err, results) {
-		        if (err) {console.log("Error executing query:", err); return; }
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
 
-		        console.log(results);     //print for testing
+				console.log(results); //print for testing
 
-		       	connection.close();
-		       	res.redirect('friendrequests');
-		    });
+				connection.close();
+				res.redirect('friendrequests');
+			});
 		});
-	} else if (response=="reject") {
+	} else if (response == "reject") {
 		//Validate that person you are trying to friend exists
-		var query = "DELETE FROM FRIENDS_WITH WHERE FRIEND_ID1='" + friender +"' AND FRIEND_ID2='" + friendee + "'";
-	    oracle.connect(connectData, function(err, connection) {
-	    	if (err) {console.log("Error connecting to db:", err); return;}
+		var query = "DELETE FROM FRIENDS_WITH WHERE FRIEND_ID1='" + friender + "' AND FRIEND_ID2='" + friendee + "'";
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
 
-		    connection.execute(query, [], function(err, results) {
-		        if (err) {console.log("Error executing query:", err); return; }
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
 
-		        console.log(results);     //print for testing
+				console.log(results); //print for testing
 
-		       	connection.close();
-		       	res.redirect('friendrequests');
-		    });
-		});		
+				connection.close();
+				res.redirect('friendrequests');
+			});
+		});
 	}
 });
 
 
 //Log out
-router.get('/logout', function(req,res) {
-	currUser.signed_in=false;
+router.get('/logout', function (req, res) {
+	global.currUser.signed_in = false;
 	res.render('logout');
 });
 
 router.post('/myprofile', function (req, res) {
 
-  var tripsize = 0;
-  var locationid = 0;
-  var userid = 'gsn';
-  var tripid = tripsize;
-  var planid = 1;
-  var privacycontent = "'public'";
-  var locationname = req.body.locationname;
-  var locationtype = req.body.locationtype;
-  var invitees = req.body.Invitees;
-  var album = req.body.album;
-  var content = req.body.content;
-  var items = req.body.items;
+	var tripsize = 0;
+	var locationid = 0;
+	var userid = global.currUser.username;
+	var tripid = tripsize;
+	var planid = 1;
+	var privacycontent = "'public'";
+	var locationname = req.body.locationname;
+	var locationtype = req.body.locationtype;
+	var invitees = req.body.Invitees;
+	var album = req.body.album;
+	var content = req.body.content;
+	var items = req.body.items;
 
 
-  oracle.connect(connectData, function (err, connection) {
-    if (err) {
-      console.log("Error connecting to db:", err);
-      return;
-    }
+	oracle.connect(connectData, function (err, connection) {
+		if (err) {
+			console.log("Error connecting to db:", err);
+			return;
+		}
 
-    var q2 = 'SELECT TRIP_ID AS COUNT FROM TRIPS WHERE ROWNUM <= 1';
-    tripid = connection.execute(q2, [], function (err, results) {
-      console.log('attempting tripid query');
-      if (err) {
-        console.log("Error executing query:", err);
-        return;
-      }
-      results = results[0].COUNT;
-      if (results < 15000) tripid = 15000;
-      else tripid = results + 1;
-      console.log('getting tripid = ' + tripid);
-      return tripid;
-    });
+		var q2 = 'SELECT TRIP_ID AS COUNT FROM TRIPS WHERE ROWNUM <= 1';
+		tripid = connection.execute(q2, [], function (err, results) {
+			console.log('attempting tripid query');
+			if (err) {
+				console.log("Error executing query:", err);
+				return;
+			}
+			results = results[0].COUNT;
+			if (results < 15000) tripid = 15000;
+			else tripid = results + 1;
+			console.log('getting tripid = ' + tripid);
+			return tripid;
+		});
 
-    var q = 'SELECT COUNT(LOCATION_ID) AS COUNT FROM LOCATION';
-    connection.execute(q, [], function (err, results) {
-      console.log('attempting locationid query');
-      if (err) {
-        console.log("Error executing query:", err);
-        return;
-      }
-      results = results[0].COUNT;
-      console.log(results);
-      console.log('locationid');
-      locationid = results + 1;
+		var q = 'SELECT COUNT(LOCATION_ID) AS COUNT FROM LOCATION';
+		connection.execute(q, [], function (err, results) {
+			console.log('attempting locationid query');
+			if (err) {
+				console.log("Error executing query:", err);
+				return;
+			}
+			results = results[0].COUNT;
+			console.log(results);
+			console.log('locationid');
+			locationid = results + 1;
 
-      var tripquery = 'INSERT INTO TRIPS VALUES(' + tripid +
-        ', ' + locationid + ', ' + privacycontent + ')';
-      connection.execute(tripquery, [], function (err, results) {
-        console.log('attempting query: ' + tripquery);
-        if (err) {
-          console.log("Error connecting to db:", err);
-          return;
-        }
-        console.log('FINAL COUNTDOWN: tripid, locationid = ' + locationid + ", " + tripid);
-        console.log(tripquery + "EXECUTED");
+			var tripquery = 'INSERT INTO TRIPS VALUES(' + tripid +
+				', ' + locationid + ', ' + privacycontent + ')';
+			connection.execute(tripquery, [], function (err, results) {
+				console.log('attempting query: ' + tripquery);
+				if (err) {
+					console.log("Error connecting to db:", err);
+					return;
+				}
+				console.log('FINAL COUNTDOWN: tripid, locationid = ' + locationid + ", " + tripid);
+				console.log(tripquery + "EXECUTED");
 
-        connection.close();
+				connection.close();
 
-      });
-      //for table Location
-      var sql1 = "INSERT INTO LOCATION (LOCATION_ID, LOCATION_NAME, LOCATION_TYPE) VALUES";
-      sql1 = sql1 + "(" + locationid + ", '" + locationname + "', '" + locationtype + "')";
-      connection.execute(sql1, [], function (err, results) {
-        console.log('attempting query: ' + sql1);
-        if (err) {
-          console.log("Error connecting to db:", err);
-          return;
-        }
+			});
+			//for table Location
+			var sql1 = "INSERT INTO LOCATION (LOCATION_ID, LOCATION_NAME, LOCATION_TYPE) VALUES";
+			sql1 = sql1 + "(" + locationid + ", '" + locationname + "', '" + locationtype + "')";
+			connection.execute(sql1, [], function (err, results) {
+				console.log('attempting query: ' + sql1);
+				if (err) {
+					console.log("Error connecting to db:", err);
+					return;
+				}
 
-        console.log(sql1 + "EXECUTED");
+				console.log(sql1 + "EXECUTED");
 
-        connection.close();
+				connection.close();
 
-      });
+			});
 
-      //for table Plans
-      var planquery = "INSERT INTO PLANS values(" + userid + ", " +
-        tripid + ", " + planid + ")";
-      connection.execute(planquery, [], function (err, results) {
-        console.log('attempting query: ' + planquery);
-        if (err) {
-          console.log("Error connecting to db:", err);
-          return;
-        }
+			//for table Plans
+			var planquery = "INSERT INTO PLANS values(" + userid + ", " +
+				tripid + ", " + planid + ")";
+			connection.execute(planquery, [], function (err, results) {
+				console.log('attempting query: ' + planquery);
+				if (err) {
+					console.log("Error connecting to db:", err);
+					return;
+				}
 
-        console.log(planquery + "EXECUTED");
+				console.log(planquery + "EXECUTED");
 
-        connection.close();
+				connection.close();
 
-      });
+			});
 
-      if (invitees !== '') {
-        var invquery = "INSERT INTO INVITES values(" +
-          userid + ", '" + invitees + "', " + tripid + ")";
-        connection.execute(invquery, [], function (err, results) {
-          console.log('attempting query: ' + invquery);
-          if (err) {
-            console.log("Error connecting to db:", err);
-            return;
-          }
+			if (invitees !== '') {
+				var invquery = "INSERT INTO INVITES values(" +
+					userid + ", '" + invitees + "', " + tripid + ")";
+				connection.execute(invquery, [], function (err, results) {
+					console.log('attempting query: ' + invquery);
+					if (err) {
+						console.log("Error connecting to db:", err);
+						return;
+					}
 
-          console.log(invquery + "EXECUTED");
+					console.log(invquery + "EXECUTED");
 
-          connection.close();
+					connection.close();
 
-        });
+				});
 
-      }
+			}
 
 
-    });
-  });
-  //for table Trips
+		});
+	});
+	//for table Trips
 });
 
 
