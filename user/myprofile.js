@@ -52,6 +52,8 @@ router.get('/myprofile', function (req, res) {
 
 	var query = "";
 	if (global.currUser.signed_in) {
+
+		// connect to db to get user's friends
 		oracle.connect(connectData, function (err, connection) {
 			if (err) {
 				console.log("Error connecting to db:", err);
@@ -236,7 +238,7 @@ router.get('/myprofile', function (req, res) {
 			//console.log(results); //print for testing
 
 
-
+			console.log("Dropdown array: " + dropdown);
 			res.render('myprofile', {
 				title: 'Tripster:MyProfile',
 				username: global.currUser.username,
@@ -249,8 +251,133 @@ router.get('/myprofile', function (req, res) {
 
 			});
 
+			dropdown = [];
+			friends = [];
+
 		});
 	});
+});
+
+
+router.post('/myprofile', function (req, res) {
+
+	var tripsize = 0;
+	var locationid = 0;
+	var userid = global.currUser.username;
+	var tripid = tripsize;
+	var planid = 1;
+	var privacycontent = "'public'";
+	var locationname = req.body.locationname;
+	var locationtype = req.body.locationtype;
+	var invitees = req.body.Invitees;
+	var album = req.body.album;
+	var content = req.body.content;
+	var items = req.body.items;
+	var queryresults;
+
+
+	oracle.connect(connectData, function (err, connection) {
+		if (err) {
+			console.log("Error connecting to db:", err);
+			return;
+		}
+
+		var q = 'SELECT COUNT(LOCATION_ID) AS COUNT FROM LOCATION';
+		connection.execute(q, [], function (err, results) {
+			console.log('attempting locationid query');
+			if (err) {
+				console.log("Error executing query:", err);
+				return;
+			}
+			locationid = results[0].COUNT + 1;
+			console.log("New locationid: " + locationid);
+
+			var q2 = 'SELECT TRIP_ID FROM TRIPS WHERE ROWNUM <=1 ORDER BY TRIP_ID DESC';
+			tripid = connection.execute(q2, [], function (err, results) {
+				console.log('Attempting trip_id (Count) query...');
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+				results.forEach(function (element, index, array) {
+					console.log("TRIP_ID was: " + element.TRIP_ID);
+				});
+				//console.log("Trip ID was: " + results[0].TRIP_ID);
+				results = results[0].TRIP_ID;
+				if (results < 15000) tripid = 15000;
+				else tripid = results + 1;
+				console.log('getting tripid = ' + tripid);
+
+				var tripquery = 'INSERT INTO TRIPS VALUES(' + tripid +
+					', ' + locationid + ', ' + privacycontent + ')';
+				connection.execute(tripquery, [], function (err, results) {
+					console.log('attempting query: ' + tripquery);
+					if (err) {
+						console.log("Error connecting to db:", err);
+						return;
+					}
+					console.log('FINAL COUNTDOWN: tripid, locationid = ' + tripid + ", " + locationid);
+					console.log(tripquery + "EXECUTED");
+
+					connection.close();
+
+				});
+
+				//for table Location
+				var sql1 = "INSERT INTO LOCATION (LOCATION_ID, LOCATION_NAME, LOCATION_TYPE) VALUES";
+				sql1 = sql1 + "(" + locationid + ", '" + locationname + "', '" + locationtype + "')";
+				connection.execute(sql1, [], function (err, results) {
+					console.log('attempting query: ' + sql1);
+					if (err) {
+						console.log("Error connecting to db:", err);
+						return;
+					}
+
+					console.log(sql1 + "EXECUTED");
+
+					connection.close();
+
+				});
+
+				//for table Plans
+				var planquery = "INSERT INTO PLANS values( '" + userid + "', " +
+					tripid + ", " + planid + ")";
+				connection.execute(planquery, [], function (err, results) {
+					console.log('attempting query: ' + planquery);
+					if (err) {
+						console.log("Error connecting to db:", err);
+						return;
+					}
+
+					console.log(planquery + "EXECUTED");
+
+					connection.close();
+
+				});
+
+				/*if (invitees !== '') {
+					var invquery = "INSERT INTO INVITES values(" +
+						userid + ", '" + invitees + "', " + tripid + ")";
+					connection.execute(invquery, [], function (err, results) {
+						console.log('attempting query: ' + invquery);
+						if (err) {
+							console.log("Error connecting to db:", err);
+							return;
+						}
+
+						console.log(invquery + "EXECUTED");
+
+						connection.close();
+
+					});
+
+				}*/
+
+				return tripid;
+			});
+		});
+	});
+	//for table Trips
 });
 
 //If user is logged in, get his profile information from the database and populate the editprofile.jade page
@@ -630,124 +757,6 @@ router.post('/friendrequests', function (req, res) {
 router.get('/logout', function (req, res) {
 	global.currUser.signed_in = false;
 	res.render('logout');
-});
-
-router.post('/myprofile', function (req, res) {
-
-	var tripsize = 0;
-	var locationid = 0;
-	var userid = global.currUser.username;
-	var tripid = tripsize;
-	var planid = 1;
-	var privacycontent = "'public'";
-	var locationname = req.body.locationname;
-	var locationtype = req.body.locationtype;
-	var invitees = req.body.Invitees;
-	var album = req.body.album;
-	var content = req.body.content;
-	var items = req.body.items;
-
-
-	oracle.connect(connectData, function (err, connection) {
-		if (err) {
-			console.log("Error connecting to db:", err);
-			return;
-		}
-
-		var q2 = 'SELECT TRIP_ID AS COUNT FROM TRIPS WHERE ROWNUM <= 1';
-		tripid = connection.execute(q2, [], function (err, results) {
-			console.log('attempting tripid query');
-			if (err) {
-				console.log("Error executing query:", err);
-				return;
-			}
-			results = results[0].COUNT;
-			if (results < 15000) tripid = 15000;
-			else tripid = results + 1;
-			console.log('getting tripid = ' + tripid);
-			return tripid;
-		});
-
-		var q = 'SELECT COUNT(LOCATION_ID) AS COUNT FROM LOCATION';
-		connection.execute(q, [], function (err, results) {
-			console.log('attempting locationid query');
-			if (err) {
-				console.log("Error executing query:", err);
-				return;
-			}
-			results = results[0].COUNT;
-			console.log(results);
-			console.log('locationid');
-			locationid = results + 1;
-
-			var tripquery = 'INSERT INTO TRIPS VALUES(' + tripid +
-				', ' + locationid + ', ' + privacycontent + ')';
-			connection.execute(tripquery, [], function (err, results) {
-				console.log('attempting query: ' + tripquery);
-				if (err) {
-					console.log("Error connecting to db:", err);
-					return;
-				}
-				console.log('FINAL COUNTDOWN: tripid, locationid = ' + locationid + ", " + tripid);
-				console.log(tripquery + "EXECUTED");
-
-				connection.close();
-
-			});
-			//for table Location
-			var sql1 = "INSERT INTO LOCATION (LOCATION_ID, LOCATION_NAME, LOCATION_TYPE) VALUES";
-			sql1 = sql1 + "(" + locationid + ", '" + locationname + "', '" + locationtype + "')";
-			connection.execute(sql1, [], function (err, results) {
-				console.log('attempting query: ' + sql1);
-				if (err) {
-					console.log("Error connecting to db:", err);
-					return;
-				}
-
-				console.log(sql1 + "EXECUTED");
-
-				connection.close();
-
-			});
-
-			//for table Plans
-			var planquery = "INSERT INTO PLANS values(" + userid + ", " +
-				tripid + ", " + planid + ")";
-			connection.execute(planquery, [], function (err, results) {
-				console.log('attempting query: ' + planquery);
-				if (err) {
-					console.log("Error connecting to db:", err);
-					return;
-				}
-
-				console.log(planquery + "EXECUTED");
-
-				connection.close();
-
-			});
-
-			if (invitees !== '') {
-				var invquery = "INSERT INTO INVITES values(" +
-					userid + ", '" + invitees + "', " + tripid + ")";
-				connection.execute(invquery, [], function (err, results) {
-					console.log('attempting query: ' + invquery);
-					if (err) {
-						console.log("Error connecting to db:", err);
-						return;
-					}
-
-					console.log(invquery + "EXECUTED");
-
-					connection.close();
-
-				});
-
-			}
-
-
-		});
-	});
-	//for table Trips
 });
 
 
