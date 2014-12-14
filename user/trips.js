@@ -98,7 +98,7 @@ router.post('/createtrip', function (req, res) {
 				}
 
 				if (results.length === 0) {
-					if (!type) {
+					if (!locationtype) {
 						var create_query = "INSERT INTO LOCATION (LOCATION_NAME) VALUES";
 						create_query = create_query + "('" + locationname  +"')";
 						console.log(create_query);
@@ -159,12 +159,11 @@ router.post('/createtrip', function (req, res) {
 					}
 					console.log(planquery + "EXECUTED");
 					connection.close();
-					
+
 				});
 			});	
 		});
 		//render part II of trip requests - invite friends
-		dropdown = [];
 		create_dropdown();
 		res.render('invitefriends',{
 			invitees: dropdown,
@@ -175,5 +174,29 @@ router.post('/createtrip', function (req, res) {
 	}
 });
 
+router.post('/invitefriends', function (res, req) {
+	var tripid;
+	var invitees;
+	/*
+					if (invitees !== undefined) {
+					var invquery = "INSERT INTO INVITES values(" +
+						userid + ", '" + invitees + "', " + tripid + ")";
+					console.log("haven't segfaulted yet with query: " + invquery);
+					connection.execute(invquery, [], function (err, results) {
+						console.log('attempting query: ' + invquery);
+						if (err) {
+							console.log("Error connecting to db:", err);
+							return;
+						}
+
+						console.log(invquery + "EXECUTED");
+
+						connection.close();
+
+					});
+
+				}
+			});*/
+});
 
 module.exports = router;
