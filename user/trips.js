@@ -114,7 +114,9 @@ function create_location(name, type) {
 		}
 
 		//Check if location type is null
-		//if (type == '' ||)
+		if (type == '' || !type) {
+			type = "place";
+		}
 		var create_query = "INSERT INTO LOCATION (LOCATION_NAME, LOCATION_TYPE) VALUES";
 		create_query = create_query + "('" + name, +"', '"+ type +"')";
 		oracle.execute(create_query, [], function(err, results) {
@@ -156,7 +158,7 @@ router.post('/createtrip', function (req, res) {
 		console.log(loc_exists);	//testing
 
 		if (!loc_exists) {
-			//create_location(locationname, locationtype);
+			create_location(locationname, locationtype);
 		}
 
 		connection.close();
