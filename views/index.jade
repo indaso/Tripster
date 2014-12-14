@@ -1,11 +1,14 @@
 extends layout
 
 block content
-  h1= title
-  a(href='/') Home	
-  br		
-  a(href='/login') Login
-  br
-  a(href='/signup') Signup
-  br
-  p Welcome to #{title}
+	h1= title
+	a(href='/') Home	
+	br		
+	if !currUser.signed_in
+		a(href='/login') Login
+		br
+		a(href='/signup') Signup
+		br
+	else
+		a(href='/myprofile') My Profile
+		p Welcome to #{title}

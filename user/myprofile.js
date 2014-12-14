@@ -292,20 +292,15 @@ router.post('/myprofile', function (req, res) {
 			locationid = results[0].COUNT + 1;
 			console.log("New locationid: " + locationid);
 
-			var q2 = 'SELECT TRIP_ID FROM TRIPS WHERE ROWNUM <=1 ORDER BY TRIP_ID DESC';
-			tripid = connection.execute(q2, [], function (err, results) {
+			var q2 = 'SELECT MAX(TRIP_ID) AS MAX FROM TRIPS';
+			connection.execute(q2, [], function (err, results) {
 				console.log('Attempting trip_id (Count) query...');
 				if (err) {
 					console.log("Error executing query:", err);
 					return;
 				}
-				results.forEach(function (element, index, array) {
-					console.log("TRIP_ID was: " + element.TRIP_ID);
-				});
-				//console.log("Trip ID was: " + results[0].TRIP_ID);
-				results = results[0].TRIP_ID;
-				if (results < 15000) tripid = 15000;
-				else tripid = results + 1;
+				console.log("TRIP_ID: " + results[0].MAX);
+				tripid = results[0].MAX + 1;
 				console.log('getting tripid = ' + tripid);
 
 				var tripquery = 'INSERT INTO TRIPS VALUES(' + tripid +
@@ -355,7 +350,9 @@ router.post('/myprofile', function (req, res) {
 
 				});
 
-				/*if (invitees !== '') {
+				console.log("Invitees: " + invitees);
+
+				if (invitees !== '') {
 					var invquery = "INSERT INTO INVITES values(" +
 						userid + ", '" + invitees + "', " + tripid + ")";
 					connection.execute(invquery, [], function (err, results) {
@@ -371,12 +368,14 @@ router.post('/myprofile', function (req, res) {
 
 					});
 
-				}*/
-
-				return tripid;
+				}
+				//connection.close();
 			});
+			//connection.close();
 		});
 	});
+
+	res.redirect('/');
 	//for table Trips
 });
 

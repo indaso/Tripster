@@ -17,9 +17,14 @@ var connectData = {
 };
 
 router.get('/login', function (req, res) {
-  res.render('login', {
-    title: 'Tripster:Login'
-  });
+  if (!global.currUser.signed_in) {
+    res.render('login', {
+      title: 'Tripster:Login'
+    });
+  } else {
+    res.redirect('/myprofile');
+  }
+
 });
 
 
