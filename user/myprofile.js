@@ -252,7 +252,13 @@ router.get('/myprofile', function (req, res) {
 			});
 
 			dropdown = [];
-			friends = [];
+			uniqueFriends = [];
+			uniqueFriendsIds = [];
+			uniqueTrips = [];
+			uniqueTripsIds = [];
+			uniquePics = [];
+
+			//console.log("Rendered page, dropdown: " + dropdown);
 
 		});
 	});
@@ -311,10 +317,10 @@ router.post('/myprofile', function (req, res) {
 						console.log("Error connecting to db:", err);
 						return;
 					}
-					console.log('FINAL COUNTDOWN: tripid, locationid = ' + tripid + ", " + locationid);
+					//console.log('FINAL COUNTDOWN: tripid, locationid = ' + tripid + ", " + locationid);
 					console.log(tripquery + "EXECUTED");
 
-					connection.close();
+					//connection.close();
 
 				});
 
@@ -330,7 +336,7 @@ router.post('/myprofile', function (req, res) {
 
 					console.log(sql1 + "EXECUTED");
 
-					connection.close();
+					//connection.close();
 
 				});
 
@@ -346,15 +352,16 @@ router.post('/myprofile', function (req, res) {
 
 					console.log(planquery + "EXECUTED");
 
-					connection.close();
+					//connection.close();
 
 				});
 
-				console.log("Invitees: " + invitees);
+				//console.log("Invitees: " + invitees);
 
-				if (invitees !== '') {
+				if (invitees !== undefined) {
 					var invquery = "INSERT INTO INVITES values(" +
 						userid + ", '" + invitees + "', " + tripid + ")";
+					console.log("haven't segfaulted yet with query: " + invquery);
 					connection.execute(invquery, [], function (err, results) {
 						console.log('attempting query: ' + invquery);
 						if (err) {
@@ -369,9 +376,7 @@ router.post('/myprofile', function (req, res) {
 					});
 
 				}
-				//connection.close();
 			});
-			//connection.close();
 		});
 	});
 
