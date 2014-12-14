@@ -16,26 +16,25 @@ block content
 			label(for='locationname') Where do you wanna go? 
 			input(type='text', name='locationname')
 		p
+			label(for="triptype") Is this a real trip?
+			input(type='radio', name='planid', checked=type=="dream",value=1)
+		p
+			label(for"triptype") Or a dream trip?
+			input(type='radio', name='planid', checked=type=="real", value=0) 
+
+		p
 			label(for='locationtype') Type of Location? 
 			input(type='text', name='locationtype')
 
 		p
 			label(for='privacycontent') Public 
-			input(type='radio', name='privacycontent')
+			input(type='radio', name='privacycontent', checked=privacy=="public", value='public')
 		p
 			label(for='privacycontent') Private
-			input(type='radio', name='privacycontent')
+			input(type='radio', name='privacycontent',  checked=privacy=="real", value='private')
 
 		p
-			label(for='invitees') Who would you like to invite? 
-			select(name='invitees')
-				option(value='')
-				each invitee in invitees
-					//- var select=null; 
-					option(value=invitee, selected=select) #{invitee}
-
-		p
-			label(for='items') What items should they bring? (seperate by commas)
+			label(for='items') What items do you need? (seperate by commas)
 			input(type='text', name='items')
 
 		p

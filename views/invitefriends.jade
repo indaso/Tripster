@@ -1,0 +1,22 @@
+extends layout
+block content
+	a(href="/") Home
+	br			
+	a(href="/addfriends") Add Friends
+	br
+	a(href="/editprofile") Edit My Profile 
+	br
+	a(href="/friendrequests") Pending Friend Requests
+	br
+	a(href="/logout") Logout
+
+	h1 Plan your trip! Who would you like to invite? 
+	form(method='post')
+
+		p
+			label(for='invitees') Friends:
+			select(name='invitees')
+				option(value='')
+				each invitee in invitees
+					//- var select=null; 
+					option(value=invitee, selected=select) #{invitee}
