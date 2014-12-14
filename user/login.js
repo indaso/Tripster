@@ -48,7 +48,6 @@ router.post('/login', function (req, res) {
     //userid for testing
     var query = 'SELECT PASSWORD, USER_ID FROM USERS WHERE PASSWORD = ' + "'" + password + "'" +
       "AND USER_ID = '" + username + "'";
-    console.log('QUERY = ' + query);
     connection.execute(query, [], function (err, results) {
       if (err) {
         console.log("Error executing query:", err);
@@ -60,7 +59,6 @@ router.post('/login', function (req, res) {
         currUser = new User(username, password);
         currUser.signed_in = true;
         console.log("SUCCESSFUL LOGIN");
-        console.log("User name=" + currUser.username + " User password=" + currUser.password);
         console.log("User signed_in: " + currUser.signed_in);
         res.redirect('/myprofile');
       } else console.log("WRONG");

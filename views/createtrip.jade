@@ -1,0 +1,48 @@
+extends layout
+block content
+	a(href="/") Home
+	br			
+	a(href="/addfriends") Add Friends
+	br
+	a(href="/editprofile") Edit My Profile 
+	br
+	a(href="/friendrequests") Pending Friend Requests
+	br
+	a(href="/logout") Logout
+
+	h1 Plan a Trip! 
+	form(method='post')
+		p
+			label(for='locationname') Where do you wanna go? 
+			input(type='text', name='locationname')
+		p
+			label(for='locationtype') Type of Location? 
+			input(type='text', name='locationtype')
+
+		p
+			label(for='privacycontent') Public 
+			input(type='radio', name='privacycontent')
+		p
+			label(for='privacycontent') Private
+			input(type='radio', name='privacycontent')
+
+		p
+			label(for='invitees') Who would you like to invite? 
+			select(name='invitees')
+				option(value='')
+				each invitee in invitees
+					//- var select=null; 
+					option(value=invitee, selected=select) #{invitee}
+
+		p
+			label(for='items') What items should they bring? (seperate by commas)
+			input(type='text', name='items')
+
+		p
+			label(for='album') Name of album associated with trip? 
+			input(type='text', name='album')
+		p
+			label(for='content') Post links to pictures and videos here, seperated by comma. 
+			input(type='text', name='content')
+			
+		input(type='submit')
