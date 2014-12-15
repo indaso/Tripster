@@ -60,7 +60,7 @@ router.get('/myprofile', function (req, res) {
 				console.log("Error connecting to db:", err);
 				return;
 			}
-			
+
 			//Populates user profile information
 			var query = "SELECT * FROM USERS WHERE USER_ID='" + global.currUser.username + "'";
 			connection.execute(query, [], function (err, results) {
@@ -217,62 +217,62 @@ router.get('/myprofile', function (req, res) {
 	}
 });
 
-	//If user is logged in, get his profile information from the database and populate the editprofile.jade page
-	router.get('/editprofile', function (req, res) {
-		if (global.currUser.signed_in) {
-			var email;
-			var affiliation;
-			var interests;
-			var name;
+//If user is logged in, get his profile information from the database and populate the editprofile.jade page
+router.get('/editprofile', function (req, res) {
+	if (global.currUser.signed_in) {
+		var email;
+		var affiliation;
+		var interests;
+		var name;
 
-			//get user's information from the database
-			oracle.connect(connectData, function (err, connection) {
+		//get user's information from the database
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+			var query = "SELECT * FROM USERS WHERE USER_ID='" + global.currUser.username + "'";
+			connection.execute(query, [], function (err, results) {
 				if (err) {
-					console.log("Error connecting to db:", err);
+					console.log("Error executing query:", err);
 					return;
 				}
-				var query = "SELECT * FROM USERS WHERE USER_ID='" + global.currUser.username + "'";
-				connection.execute(query, [], function (err, results) {
-					if (err) {
-						console.log("Error executing query:", err);
-						return;
-					}
 
-					console.log(results); //print for testing
+				console.log(results); //print for testing
 
-					email = results[0].EMAIL;
-					name = results[0].NAME;
-					affiliation = results[0].AFFILIATION;
-					interests = results[0].INTERESTS;
+				email = results[0].EMAIL;
+				name = results[0].NAME;
+				affiliation = results[0].AFFILIATION;
+				interests = results[0].INTERESTS;
 
-					//check to see if values are null or undefined
-					if (!email)
-						email = "";
-					if (!name)
-						name = "";
-					if (!affiliation)
-						affiliation = "";
-					if (!interests)
-						interests = "";
+				//check to see if values are null or undefined
+				if (!email)
+					email = "";
+				if (!name)
+					name = "";
+				if (!affiliation)
+					affiliation = "";
+				if (!interests)
+					interests = "";
 
-					//pass values to the client
-					res.render('editprofile', {
-						title: 'Tripster:Edit My Profile',
-						username: global.currUser.username,
-						name: name,
-						email: email,
-						affiliation: affiliation,
-						interests: interests
-					});
-
-
-					connection.close();
+				//pass values to the client
+				res.render('editprofile', {
+					title: 'Tripster:Edit My Profile',
+					username: global.currUser.username,
+					name: name,
+					email: email,
+					affiliation: affiliation,
+					interests: interests
 				});
+
+
+				connection.close();
 			});
-		} else {
-			//if not logged in, redirect to login page
-			res.redirect('/login');
-		}
+		});
+	} else {
+		//if not logged in, redirect to login page
+		res.redirect('/login');
+	}
 });
 
 //Edit My Profile
@@ -363,7 +363,7 @@ router.post('/addfriends', function (req, res) {
 				oracle.connect(connectData, function (err, connection) {
 					if (err) {
 						console.log("Error connecting to db:", err);
-							return;
+						return;
 					}
 					//check if friend pair or friend request already exists
 					var friended = "SELECT * FROM FRIENDS_WITH WHERE (FRIEND_ID1 = '" + friender +
@@ -381,36 +381,36 @@ router.post('/addfriends', function (req, res) {
 						connection.close();
 
 						if (results.length == 1) {
-								if (results[0].ACCEPTED == 1) {
-									var mess = "You and " + friendee + " are already friends!";
-									res.render("addfriends", {
-										errormsg: mess
-									});
-								} else {
-									var mess = "You already sent " + friendee + " a friend request!";
-									res.render("addfriends", {
-										errormsg: mess
-									});
-								}
+							if (results[0].ACCEPTED == 1) {
+								var mess = "You and " + friendee + " are already friends!";
+								res.render("addfriends", {
+									errormsg: mess
+								});
+							} else {
+								var mess = "You already sent " + friendee + " a friend request!";
+								res.render("addfriends", {
+									errormsg: mess
+								});
 							}
-						});
-
-						//Place friend request in database
-						var createreq = "INSERT INTO FRIENDS_WITH (FRIEND_ID1, FRIEND_ID2, ACCEPTED) VALUES";
-						createreq = createreq + "('" + friender + "', '" + friendee + "', " + 0 + ")";
-						console.log(createreq);
-						connection.execute(createreq, [], function (err, results) {
-							if (err) {
-								console.log("Error executing query:", err);
-								return;
-							}
-
-							console.log(results); //print for testing
-
-							connection.close();
-						});
+						}
 					});
-				}
+
+					//Place friend request in database
+					var createreq = "INSERT INTO FRIENDS_WITH (FRIEND_ID1, FRIEND_ID2, ACCEPTED) VALUES";
+					createreq = createreq + "('" + friender + "', '" + friendee + "', " + 0 + ")";
+					console.log(createreq);
+					connection.execute(createreq, [], function (err, results) {
+						if (err) {
+							console.log("Error executing query:", err);
+							return;
+						}
+
+						console.log(results); //print for testing
+
+						connection.close();
+					});
+				});
+			}
 		});
 	});
 });
@@ -520,7 +520,7 @@ router.post('/friendrequests', function (req, res) {
 //Log out
 router.get('/logout', function (req, res) {
 	global.currUser.signed_in = false;
-	res.render('logout');
+	res.redirect('/');
 });
 
 

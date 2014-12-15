@@ -1,0 +1,25 @@
+extends layout
+block content
+	a(href="/") Home			
+	a(href='/myprofile') MyProfile	
+	a(href="/addfriends") Add Friends
+	br
+	a(href="/friendstrips") My friends trips
+	br
+	a(href="/tripinvites") Trip Invites
+	br			
+	a(href="/logout") Logout
+
+
+	h1 Respond to Trip Invites
+
+	p #{message}
+	ul 
+		each t, index in trips
+			li= t
+			p= friends[index]
+			form(method='post')
+				p Request to be on your friends trips
+				input(type='hidden', name='trip', value=t)
+				input(type='hidden', name='owner', value=f)
+				input(type='submit')
