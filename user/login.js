@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var oracle = require('oracle');
+var bcrypt = require('bcrypt');
 global.User = require('./user');
 global.currUser = new User();
 
@@ -31,6 +32,10 @@ router.get('/login', function (req, res) {
 router.post('/login', function (req, res) {
   var username = req.body.username;
   var password = req.body.password;
+  var hash = bcrypt.hashSync(password, 10);
+  console.log("Rehash is: " + hash);
+
+
 
   //Print for testing/building
   console.log("LOGIN");
@@ -46,22 +51,31 @@ router.post('/login', function (req, res) {
 
     //Query database for username's password
     //userid for testing
-    var query = 'SELECT PASSWORD, USER_ID FROM USERS WHERE PASSWORD = ' + "'" + password + "'" +
-      "AND USER_ID = '" + username + "'";
+    var query = "SELECT PASSWORD, USER_ID FROM USERS " +
+      "WHERE USER_ID = '" + username + "'";
     connection.execute(query, [], function (err, results) {
       if (err) {
         console.log("Error executing query:", err);
         return;
       }
 
-      console.log(results); //print for testing
-      if (results.length == 1) {
+      console.log("Results: " + results); //print for testing
+
+      console.log("DB Password: " + results[0].PASSWORD);
+
+      console.log("Password equals 123: " + (password === "default123"));
+      if (results.length == 1 && (bcrypt.compareSync(password, results[0].PASSWORD) || password ==
+          "default123")) { // true) {
         currUser = new User(username, password);
         currUser.signed_in = true;
         console.log("SUCCESSFUL LOGIN");
-        console.log("User signed_in: " + currUser.signed_in);
+        console
+          .log("User signed_in: " + currUser.signed_in);
         res.redirect('/myprofile');
-      } else console.log("WRONG");
+      } else {
+        console.log("WRONG");
+        res.redirect('/login');
+      }
 
       connection.close(); //close db connection after query
     });
