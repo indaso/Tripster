@@ -81,7 +81,7 @@ router.post('/createtrip', function (req, res) {
 		var content = req.body.content;
 		var items = req.body.items;
 		var tripid;
-
+/*
 		//check if location exists, if not, create it in table
 		oracle.connect(connectData, function (err, connection) {
 			if (err) {
@@ -162,9 +162,11 @@ router.post('/createtrip', function (req, res) {
 
 				});
 			});	
-		});
+		});*/
 		//render part II of trip requests - invite friends
+		dropdown = [];
 		create_dropdown();
+		console.log(dropdown);
 		res.render('invitefriends',{
 			invitees: dropdown,
 			tripid : tripid

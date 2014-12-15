@@ -13,11 +13,11 @@ block content
 	h1 Plan your trip! Who would you like to invite? 
 	form(method='post')
 		p
-			input(type='hidden', value=#{tripid}, name='tripid')
-
+			input(type='hidden', value='#{tripid}', name='tripid')
 		p
-			label(for='invitees') Friends:
-			select(name='invitees')
-				option(value='')
-				each invitee in invitees
-					option(value=invitee, selected=select) #{invitee}
+			label(for="invitees") Friends:
+			for invitee in invitees
+				p
+					input(type="checkbox", name="invited", value='#{invitee}').form-control
+					'#{invitee}'
+
