@@ -16,8 +16,7 @@ block content
 			input(type='hidden', value='#{tripid}', name='tripid')
 		p
 			label(for="invitees") Friends:
-			for invitee in invitees
+			each invitee in invitees
 				p
-					input(type="checkbox", name="invited", value='#{invitee}').form-control
-					'#{invitee}'
+					input(type="checkbox", name="invited", value='#{invitee}')=invitee
 
