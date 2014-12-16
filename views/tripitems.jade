@@ -1,0 +1,11 @@
+extends layout
+block content
+	h1 Plan your trip! What items do you need to bring?
+	form(method='post')
+		p
+			input(type='hidden', value='#{tripid}', name='tripid')
+		p
+			label(for="items") Items: enter with comma inbetween
+				input(type='text', name='locationname')
+		input(type='submit')
+

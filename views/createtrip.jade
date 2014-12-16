@@ -8,6 +8,8 @@ block content
 	br
 	a(href="/friendrequests") Pending Friend Requests
 	br
+	a(href="/tripinvites") Trip Invites
+	br		
 	a(href="/logout") Logout
 
 	h1 Plan a Trip! 
@@ -31,17 +33,5 @@ block content
 			input(type='radio', name='privacycontent', checked=privacy=="public", value='public')
 		p
 			label(for='privacycontent') Private
-			input(type='radio', name='privacycontent',  checked=privacy=="real", value='private')
-
-		p
-			label(for='items') What items do you need? (seperate by commas)
-			input(type='text', name='items')
-
-		p
-			label(for='album') Name of album associated with trip? 
-			input(type='text', name='album')
-		p
-			label(for='content') Post links to pictures and videos here, seperated by comma. 
-			input(type='text', name='content')
-			
+			input(type='radio', name='privacycontent',  checked=privacy=="real", value='private')			
 		input(type='submit')
