@@ -207,14 +207,12 @@ router.get('/myprofile', function (req, res) {
 				uniqueTripsIds = [];
 				uniquePics = [];
 
-				//console.log("Rendered page, dropdown: " + dropdown);
-
 			});
 		});
-	} else {
-		//if not logged in, redirect to login page
-		res.redirect('/login');
-	}
+} else {
+	//if not logged in, redirect to login page
+	res.redirect('/login');
+}
 });
 
 	//If user is logged in, get his profile information from the database and populate the editprofile.jade page
