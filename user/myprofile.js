@@ -314,7 +314,6 @@ router.post('/editprofile', function (req, res) {
 		res.redirect('/login');
 	}
 	//connection.close(); //close db connection after query
-
 });
 
 
