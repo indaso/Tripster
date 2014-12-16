@@ -217,6 +217,177 @@ router.get('/myprofile', function (req, res) {
 	}
 });
 
+router.get('/myprofile/:user_id', function (req, res) {
+	var query = "";
+	if (global.currUser.signed_in) {
+		var email;
+		var affiliation;
+		var interests;
+		var name;
+
+		//get user's information from the database
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+
+			//Populates user profile information
+			var query = "SELECT * FROM USERS WHERE USER_ID='" + req.params.user_id + "'";
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+
+				console.log(results[0].EMAIL); //print for testing
+
+				email = results[0].EMAIL;
+				name = results[0].NAME;
+				affiliation = results[0].AFFILIATION;
+				interests = results[0].INTERESTS;
+
+				//check to see if values are null or undefined
+				if (!email)
+					email = "";
+				if (!name)
+					name = "";
+				if (!affiliation)
+					affiliation = "";
+				if (!interests)
+					interests = "";
+			});
+
+			//DAFUQ DOES THIS DO
+			var query = "SELECT * FROM FRIENDS_WITH FW " +
+				"INNER JOIN PLANS P ON P.USER_ID=FW.FRIEND_ID2 " +
+				"INNER JOIN TRIPS T ON T.TRIP_ID=P.TRIP_ID " +
+				"INNER JOIN LOCATION L ON L.LOCATION_NAME=T.LOCATION_ID " +
+				"INNER JOIN HAS H ON H.TRIP_ID=T.TRIP_ID " +
+				"INNER JOIN INCLUDES I ON I.ALBUM_ID=H.ALBUM_ID " +
+				"INNER JOIN CONTENT C ON C.CONTENT_ID=I.CONTENT_ID " +
+				"WHERE FW.ACCEPTED=1 " +
+				"AND FW.FRIEND_ID1='" + req.params.user_id + "'";
+			console.log('QUERY = ' + query);
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+
+				var qresults = results;
+
+				// first get each friend
+
+				var uniqueFriendsIds = [];
+
+
+
+				friendObj.id = "";
+				friendObj.trips = [];
+
+				/**
+				 * Unique trips for variable
+				 * @type {Array}
+				 */
+				var uniqueTrips = [];
+				var uniqueTripsIds = [];
+
+				for (var i = 0; i < results.length; i++) {
+					if (!contains(uniqueFriendsIds, results[i].FRIEND_ID2)) {
+						var friend = new friendObj();
+						friend.id = results[i].FRIEND_ID2;
+						friend.trips = [];
+						uniqueFriends.push(friend);
+						uniqueFriendsIds.push(friend.id);
+					}
+				}
+
+				// for each friend, find his unique trips
+
+				// does this cover multiple locations?
+
+				for (var i = 0; i < results.length; i++) {
+					// check for unique trips
+					if (!contains(uniqueTrips, results[i].TRIP_ID)) {
+						// if it's a unique trip, match it to friend object
+						for (var j = 0; j < uniqueFriends.length; j++) {
+							if (uniqueFriends[j].id === results[i].FRIEND_ID2) {
+								// add location name to object
+								var tripObj = {
+									trip: results[i].LOCATION_NAME,
+									pics: []
+								};
+								uniqueFriends[j].trips.push(tripObj);
+								uniqueTrips.push(results[i].TRIP_ID);
+							}
+						}
+					}
+				}
+
+				for (var i = 0; i < results.length; i++) {
+					if (!contains(uniquePics, results[i].URL)) {
+						// if it's a unique trip, match it to friend object
+						for (var j = 0; j < uniqueFriends.length; j++) {
+							if (uniqueFriends[j].id === results[i].FRIEND_ID2) {
+								// go through each trip object
+								for (var k = 0; k < uniqueFriends[j].trips.length; k++) {
+									uniqueFriends[j].trips[k].pics.push(results[i].URL);
+								}
+								uniquePics.push(results[i].URL);
+							}
+						}
+					}
+				}
+
+
+
+				/*console.log("uniqueTrips length: " + uniqueTrips.length);
+				console.log("uniqueFriendsIds length " + uniqueFriendsIds.length);
+				console.log("uniquePics length" + uniquePics.length);
+
+				// for each person, print out their trips for testing
+							for (var i = 0; i < uniqueFriends.length; i++) {
+								for (var j = 0; j < uniqueFriends[i].trips.length; j++) {
+									console.log("Friend: " + uniqueFriends[i].id);
+									console.log("Trip: " + uniqueFriends[i].trips[j].trip);
+									console.log("Trip Pictures: " + uniqueFriends[i].trips[j].pics);
+								}
+							}
+				*/
+				friends = uniqueFriends;
+				//console.log("Friends array: " + friends);
+				//console.log("Friends length: " + friends.length);
+				//console.log("Friends[0]: " + friends[0].id);
+
+				//console.log(results); //print for testing
+
+				connection.close();
+				res.render('myprofile', {
+					title: 'Tripster:MyProfile',
+					username: req.params.user_id,
+					name: name,
+					email: email,
+					affiliation: affiliation,
+					interests: interests,
+					friends: friends,
+				});
+				uniqueFriends = [];
+				uniqueFriendsIds = [];
+				uniqueTrips = [];
+				uniqueTripsIds = [];
+				uniquePics = [];
+
+				//console.log("Rendered page, dropdown: " + dropdown);
+
+			});
+		});
+	} else {
+		//if not logged in, redirect to login page
+		res.redirect('/login');
+	}
+});
+
 //If user is logged in, get his profile information from the database and populate the editprofile.jade page
 router.get('/editprofile', function (req, res) {
 	if (global.currUser.signed_in) {
