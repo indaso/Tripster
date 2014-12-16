@@ -65,11 +65,41 @@ function create_dropdown() {
 }
 
 router.get('/createtrip', function (req, res) {
-	create_dropdown();
-	console.log("createtrip:" + dropdown);
 	if (global.currUser.signed_in) {
-		//Render Createtrip page
-		res.render('createtrip', {});
+		//SQL
+		var triprec = "SELECT DISTINCT LOCATION_ID FROM FRIENDS_WITH FW INNER JOIN PLANS P ON P.USER_ID=FW.FRIEND_ID2" +
+			" INNER JOIN TRIPS T ON T.TRIP_ID=P.TRIP_ID	INNER JOIN LOCATION L ON L.LOCATION_NAME=T.LOCATION_ID" +
+			" INNER JOIN HAS H ON H.TRIP_ID=T.TRIP_ID INNER JOIN INCLUDES I ON I.ALBUM_ID=H.ALBUM_ID" +
+			" INNER JOIN CONTENT C ON C.CONTENT_ID=I.CONTENT_ID WHERE FW.ACCEPTED=1	AND FW.FRIEND_ID1='" + global.currUser.username +
+			"'";
+		console.log(triprec);
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("error connecting to db:", err);
+				return;
+			}
+			console.log(triprec);
+			connection.execute(triprec, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query", err);
+					return;
+				}
+				console.log("results: ");
+				console.log(results);
+
+				var trips = [];
+				for (var l = 0; l < results.length; l++)
+					trips[l] = results[l].LOCATION_ID;
+				console.log(trips);
+				connection.close();
+				create_dropdown();
+				console.log("createtrip:" + dropdown);
+				//Render Createtrip page
+				res.render('createtrip', {
+					trips: trips
+				});
+			});
+		});
 	} else {
 		res.redirect('/login');
 	}

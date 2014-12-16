@@ -35,3 +35,8 @@ block content
 			label(for='privacycontent') Private
 			input(type='radio', name='privacycontent',  checked=privacy=="real", value='private')			
 		input(type='submit')
+
+	h2 Some place that your friends have been:
+	ul 
+		each t in trips 
+			li= t
