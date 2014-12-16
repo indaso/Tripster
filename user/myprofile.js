@@ -47,7 +47,7 @@ function contains(arr, elem) {
 }
 
 router.get('/myprofile', function (req, res) {
-	var query = "";
+	//var query = "";
 	if (global.currUser.signed_in) {
 		var email;
 		var affiliation;
@@ -218,7 +218,7 @@ router.get('/myprofile', function (req, res) {
 });
 
 router.get('/myprofile/:user_id', function (req, res) {
-	var query = "";
+	//var query = "";
 	if (global.currUser.signed_in) {
 		var email;
 		var affiliation;

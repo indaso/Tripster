@@ -17,6 +17,7 @@ var myprofile_routes = require('./user/myprofile');
 var signup_routes = require('./user/signup');
 var trips_routes = require('./user/trips');
 var mytrips_routes = require('./user/mytrips');
+var search_routes = require('./user/search');
 
 var app = express();
 
@@ -41,6 +42,7 @@ app.use('/', myprofile_routes);
 app.use('/', signup_routes);
 app.use('/', trips_routes);
 app.use('/', mytrips_routes);
+app.use('/', search_routes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

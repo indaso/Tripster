@@ -1,0 +1,25 @@
+extends layout
+block content
+	h1 Search
+	a(href="/") Home
+
+	if users.length > 0
+		h1 Results
+	p
+		each val in users
+			a(href="/myprofile/" + val) #{val}
+
+	p
+		if trips.length > 0
+			label Trips
+		each x in trips
+			li=x
+
+	form(method='post')
+		p
+			label(for='username') User
+			input(type='text', name='username')
+		p
+			label(for='location') Location
+			input(type='text', name='location')
+		input(type='submit')
