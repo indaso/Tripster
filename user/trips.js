@@ -136,7 +136,7 @@ router.post('/createtrip', function (req, res) {
 				tripid = results[0].MAX + 1;
 
 				//Insert new trip into database, tables TRIPS and PLANS
-				var newtrip = "INSERT INTO TRIPS (TRIP_ID, LOCATION_ID, PRIVACY_CONTENT) VALUES('" + tripid + "', '" +
+				var newtrip = "INSERT INTO TRIPS (TRIP_ID, LOCATION_ID, PRIVACY_CONTENT) VALUES(" + tripid + ", '" +
 					locationname + "', '" + privacycontent + "')";
 				console.log(newtrip);
 				connection.execute(newtrip, [], function (err, results) {
@@ -157,7 +157,6 @@ router.post('/createtrip', function (req, res) {
 					}
 					console.log(planquery + "EXECUTED");
 					connection.close();
-
 				});
 			});
 		});
@@ -189,7 +188,7 @@ function create_invite(stmt) {
 
 //Invite friends onto our trip
 router.post('/invitefriends', function (req, res) {
-	var trip = req.body.tripid;
+	var trip = tripid;
 	var invitees = req.body.invited;
 
 	//if user did not invite anyone, go to items page
