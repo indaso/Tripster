@@ -31,7 +31,7 @@ function contains(array, obj) {
 	return false;
 }
 
-function loadpage(res) {
+function loadpage(req, res) {
 
 
 
@@ -66,11 +66,7 @@ function loadpage(res) {
 						tripid: results[i].TRIP_ID,
 						locationid: results[i].LOCATION_ID,
 						albumid: results[i].ALBUM_ID,
-						contents: {
-							pics: [],
-							//array of arrays size 2: comment, commenter
-							comments: []
-						},
+						contents: [],
 						crating: [],
 						craters: [],
 						//array of arrays size 2: comment, commenter
@@ -150,84 +146,300 @@ function loadpage(res) {
 						tripObjs[k].tratings = [avg];
 					}
 
+					connection.close();
+
 					//console.log("tripobjs:=======================");
 					//console.log(tripObjs);
 
+					/*
+										////////------------------------------------------------------------
 
-					////////------------------------------------------------------------
+
+
+										var s3 = "SELECT P.TRIP_ID, I.CONTENT_ID, CC.C_COMMENT AS ccomment, CC.C_COMMENTER_ID AS ccommenter  " +
+											"FROM PLANS P " +
+											"INNER JOIN HAS ON P.TRIP_ID = HAS.TRIP_ID " +
+											"INNER JOIN INCLUDES I ON I.ALBUM_ID = HAS.ALBUM_ID " +
+											"INNER JOIN C_COMMENTS CC ON CC.CONTENT_ID = I.CONTENT_ID " +
+											"WHERE P.USER_ID = '" + global.currUser.username +
+											"' ORDER BY I.CONTENT_ID";
+										console.log(s3);
+										connection.execute(s3, [], function (err, results) {
+											if (err) {
+												console.log("Error executing query:", err);
+												return;
+											}
+											//console.log('tcomment results ----');
+											//console.log(results);
+											for (var i = 0; i < results.length; i++) {
+												for (var j = 0; j < tripObjs.length; j++) {
+													if (results[i].TRIP_ID == tripObjs[j].tripid) {
+														var temp = [results[i].TCOMMENT, results[i].TCOMMENTER];
+														console.log('added comment/commenter pair ----');
+														console.log(temp);
+														tripObjs[j].tcomments.push(temp);
+													}
+												}
+											}
+
+											var s1 = "SELECT P.TRIP_ID, TR.T_RATING AS trating, TR.T_RATER_ID AS trater " +
+												"FROM PLANS P INNER JOIN T_RATES TR ON TR.TRIP_ID = P.TRIP_ID " +
+												"WHERE P.USER_ID = '" + global.currUser.username + "' ORDER BY P.TRIP_ID";
+											console.log(s1);
+											connection.execute(s1, [], function (err, results) {
+												if (err) {
+													console.log("Error executing query:", err);
+													return;
+												}
+												//console.log("trip ratings results-------");
+												//console.log(results);
+												for (var i = 0; i < results.length; i++) {
+													for (var j = 0; j < tripObjs.length; j++) {
+														if (results[i].TRIP_ID == tripObjs[j].tripid) {
+															tripObjs[j].tratings.push(results[i].TRATING);
+															//console.log('pushed onto tratings: ' + results[i].trating);
+															tripObjs[j].traters.push(results[i].TRATER);
+															//console.log('pushed onto traters: ' + results[i].trater);
+														}
+													}
+												}
+
+												for (var k = 0; k < tripObjs.length; k++) {
+													var sum = 0;
+													for (var l = 0; l < tripObjs[k].tratings.length; l++) {
+														sum += tripObjs[k].tratings[l];
+													}
+													var avg = sum / tripObjs[k].tratings.length;
+													tripObjs[k].tratings = [avg];
+												}
+
+												console.log("tripobjs:=======================");
+												console.log(tripObjs);
+												connection.close();
+											});
+											console.log("content comments qury results: ");
+											console.log(results);
+											connection.close();
+
+										});
 
 
 
-					var s3 = "SELECT P.TRIP_ID, I.CONTENT_ID, CC.C_COMMENT AS ccomment, CC.C_COMMENTER_ID AS ccommenter  " +
-						"FROM PLANS P " +
-						"INNER JOIN HAS ON P.TRIP_ID = HAS.TRIP_ID " +
-						"INNER JOIN INCLUDES I ON I.ALBUM_ID = HAS.ALBUM_ID " +
-						"INNER JOIN C_COMMENTS CC ON CC.CONTENT_ID = I.CONTENT_ID " +
-						"WHERE P.USER_ID = '" + global.currUser.username +
-						"' ORDER BY I.CONTENT_ID";
-					console.log(s3);
-					connection.execute(s3, [], function (err, results) {
-						if (err) {
-							console.log("Error executing query:", err);
-							return;
-						}
-						//console.log('tcomment results ----');
-						//console.log(results);
-						for (var i = 0; i < results.length; i++) {
-							for (var j = 0; j < tripObjs.length; j++) {
-								if (results[i].TRIP_ID == tripObjs[j].tripid) {
-									var temp = [results[i].TCOMMENT, results[i].TCOMMENTER];
-									console.log('added comment/commenter pair ----');
-									console.log(temp);
-									tripObjs[j].tcomments.push(temp);
-								}
-							}
-						}
+										//----------------------------------------------------------- */
 
-						var s1 = "SELECT P.TRIP_ID, TR.T_RATING AS trating, TR.T_RATER_ID AS trater " +
-							"FROM PLANS P INNER JOIN T_RATES TR ON TR.TRIP_ID = P.TRIP_ID " +
-							"WHERE P.USER_ID = '" + global.currUser.username + "' ORDER BY P.TRIP_ID";
-						console.log(s1);
-						connection.execute(s1, [], function (err, results) {
-							if (err) {
-								console.log("Error executing query:", err);
-								return;
-							}
-							//console.log("trip ratings results-------");
-							//console.log(results);
-							for (var i = 0; i < results.length; i++) {
-								for (var j = 0; j < tripObjs.length; j++) {
-									if (results[i].TRIP_ID == tripObjs[j].tripid) {
-										tripObjs[j].tratings.push(results[i].TRATING);
-										//console.log('pushed onto tratings: ' + results[i].trating);
-										tripObjs[j].traters.push(results[i].TRATER);
-										//console.log('pushed onto traters: ' + results[i].trater);
-									}
-								}
-							}
 
-							for (var k = 0; k < tripObjs.length; k++) {
-								var sum = 0;
-								for (var l = 0; l < tripObjs[k].tratings.length; l++) {
-									sum += tripObjs[k].tratings[l];
-								}
-								var avg = sum / tripObjs[k].tratings.length;
-								tripObjs[k].tratings = [avg];
-							}
-
-							console.log("tripobjs:=======================");
-							console.log(tripObjs);
-							connection.close();
-						});
-						console.log("content comments qury results: ");
-						console.log(results);
-						connection.close();
-
+					//connection.close();
+					//Render mytrips page
+					res.render('mytrips', {
+						trips: tripObjs
 					});
+				});
+
+
+			});
+
+		});
+
+	});
+
+
+}
+
+function loadpage2(req, res) {
 
 
 
-					//-----------------------------------------------------------
+	oracle.connect(connectData, function (err, connection) {
+		if (err) {
+			console.log("Error connecting to db:", err);
+			return;
+		}
+
+		//get tripid, locationid to print into page (list)
+		var query =
+			"SELECT * FROM TRIPS T " +
+			"INNER JOIN PLANS ON Plans.trip_id = T.trip_id " +
+			"INNER JOIN HAS ON HAS.trip_id = T.trip_id " +
+			"INNER JOIN INCLUDES ON Includes.album_id = Has.album_id " +
+			"INNER JOIN CONTENT ON Includes.content_id = CONTENT.content_id " +
+			"WHERE Plans.USER_ID = '" +
+			req.params.user_id + "'";
+
+		connection.execute(query, [], function (err, results) {
+			if (err) {
+				console.log("Error executing query:", err);
+				return;
+			}
+
+
+			for (var i = 0; i < results.length; i++) {
+				if (!contains(idcount, results[i].TRIP_ID)) {
+					idcount.push(results[i].TRIP_ID);
+					console.log('idcount = ' + idcount);
+					var tripObj = {
+						tripid: results[i].TRIP_ID,
+						locationid: results[i].LOCATION_ID,
+						albumid: results[i].ALBUM_ID,
+						contents: [],
+						crating: [],
+						craters: [],
+						//array of arrays size 2: comment, commenter
+						tcomments: [],
+						tratings: [],
+						traters: []
+
+					};
+					tripObjs.push(tripObj);
+				} else {
+					for (var j = 0; j < tripObjs.length; j++) {
+						if (tripObjs[j].tripid == results[i].TRIP_ID) {
+							if (!contains(tripObjs[j].contents, results[i].URL)) {
+								tripObjs[j].contents.push(results[i].URL);
+							}
+							/*tripObjs[j].ccomments.push(results[i].C_COMMENT);
+							tripObjs[j].crating.push(results[i].C_RATING);
+							tripObjs[j].tcomments.push(results[i].T_COMMENT);
+							tripObjs[j].trating.push(results[i].T_RATING);*/
+						}
+					}
+				}
+			}
+
+			var s = "SELECT P.TRIP_ID, TC.T_COMMENT AS tcomment, TC.T_COMMENTER_ID AS tcommenter  " +
+				"FROM PLANS P " +
+				"INNER JOIN T_COMMENTS TC ON TC.TRIP_ID = P.TRIP_ID " +
+				"WHERE P.USER_ID = '" + req.params.user_id +
+				"' ORDER BY P.TRIP_ID";
+			console.log(s);
+			connection.execute(s, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+				//console.log('tcomment results ----');
+				//console.log(results);
+				for (var i = 0; i < results.length; i++) {
+					for (var j = 0; j < tripObjs.length; j++) {
+						if (results[i].TRIP_ID == tripObjs[j].tripid) {
+							var temp = [results[i].TCOMMENT, results[i].TCOMMENTER];
+							//console.log('added comment/commenter pair ----');
+							//console.log(temp);
+							tripObjs[j].tcomments.push(temp);
+						}
+					}
+				}
+
+				var s1 = "SELECT P.TRIP_ID, TR.T_RATING AS trating, TR.T_RATER_ID AS trater " +
+					"FROM PLANS P INNER JOIN T_RATES TR ON TR.TRIP_ID = P.TRIP_ID " +
+					"WHERE P.USER_ID = '" + req.params.user_id + "' ORDER BY P.TRIP_ID";
+				console.log(s1);
+				connection.execute(s1, [], function (err, results) {
+					if (err) {
+						console.log("Error executing query:", err);
+						return;
+					}
+					//console.log("trip ratings results-------");
+					//console.log(results);
+					for (var i = 0; i < results.length; i++) {
+						for (var j = 0; j < tripObjs.length; j++) {
+							if (results[i].TRIP_ID == tripObjs[j].tripid) {
+								tripObjs[j].tratings.push(results[i].TRATING);
+								//console.log('pushed onto tratings: ' + results[i].trating);
+								tripObjs[j].traters.push(results[i].TRATER);
+								//console.log('pushed onto traters: ' + results[i].trater);
+							}
+						}
+					}
+
+					for (var k = 0; k < tripObjs.length; k++) {
+						var sum = 0;
+						for (var l = 0; l < tripObjs[k].tratings.length; l++) {
+							sum += tripObjs[k].tratings[l];
+						}
+						var avg = sum / tripObjs[k].tratings.length;
+						tripObjs[k].tratings = [avg];
+					}
+
+					connection.close();
+
+					//console.log("tripobjs:=======================");
+					//console.log(tripObjs);
+
+					/*
+										////////------------------------------------------------------------
+
+
+
+										var s3 = "SELECT P.TRIP_ID, I.CONTENT_ID, CC.C_COMMENT AS ccomment, CC.C_COMMENTER_ID AS ccommenter  " +
+											"FROM PLANS P " +
+											"INNER JOIN HAS ON P.TRIP_ID = HAS.TRIP_ID " +
+											"INNER JOIN INCLUDES I ON I.ALBUM_ID = HAS.ALBUM_ID " +
+											"INNER JOIN C_COMMENTS CC ON CC.CONTENT_ID = I.CONTENT_ID " +
+											"WHERE P.USER_ID = '" + global.currUser.username +
+											"' ORDER BY I.CONTENT_ID";
+										console.log(s3);
+										connection.execute(s3, [], function (err, results) {
+											if (err) {
+												console.log("Error executing query:", err);
+												return;
+											}
+											//console.log('tcomment results ----');
+											//console.log(results);
+											for (var i = 0; i < results.length; i++) {
+												for (var j = 0; j < tripObjs.length; j++) {
+													if (results[i].TRIP_ID == tripObjs[j].tripid) {
+														var temp = [results[i].TCOMMENT, results[i].TCOMMENTER];
+														console.log('added comment/commenter pair ----');
+														console.log(temp);
+														tripObjs[j].tcomments.push(temp);
+													}
+												}
+											}
+
+											var s1 = "SELECT P.TRIP_ID, TR.T_RATING AS trating, TR.T_RATER_ID AS trater " +
+												"FROM PLANS P INNER JOIN T_RATES TR ON TR.TRIP_ID = P.TRIP_ID " +
+												"WHERE P.USER_ID = '" + global.currUser.username + "' ORDER BY P.TRIP_ID";
+											console.log(s1);
+											connection.execute(s1, [], function (err, results) {
+												if (err) {
+													console.log("Error executing query:", err);
+													return;
+												}
+												//console.log("trip ratings results-------");
+												//console.log(results);
+												for (var i = 0; i < results.length; i++) {
+													for (var j = 0; j < tripObjs.length; j++) {
+														if (results[i].TRIP_ID == tripObjs[j].tripid) {
+															tripObjs[j].tratings.push(results[i].TRATING);
+															//console.log('pushed onto tratings: ' + results[i].trating);
+															tripObjs[j].traters.push(results[i].TRATER);
+															//console.log('pushed onto traters: ' + results[i].trater);
+														}
+													}
+												}
+
+												for (var k = 0; k < tripObjs.length; k++) {
+													var sum = 0;
+													for (var l = 0; l < tripObjs[k].tratings.length; l++) {
+														sum += tripObjs[k].tratings[l];
+													}
+													var avg = sum / tripObjs[k].tratings.length;
+													tripObjs[k].tratings = [avg];
+												}
+
+												console.log("tripobjs:=======================");
+												console.log(tripObjs);
+												connection.close();
+											});
+											console.log("content comments qury results: ");
+											console.log(results);
+											connection.close();
+
+										});
+
+
+
+										//----------------------------------------------------------- */
 
 
 					//connection.close();
@@ -249,7 +461,17 @@ function loadpage(res) {
 
 router.get('/mytrips', function (req, res) {
 	if (global.currUser.signed_in) {
-		loadpage(res);
+		loadpage(req, res);
+
+		//tripObjs = [];
+	} else {
+		res.redirect('/login');
+	}
+});
+
+router.get('/mytrips/:user_id', function (req, res) {
+	if (global.currUser.signed_in) {
+		loadpage2(req, res);
 
 		//tripObjs = [];
 	} else {
@@ -338,7 +560,7 @@ router.post('/mytrips', function (req, res) {
 		});
 
 
-		loadpage(res);
+		loadpage(req, res);
 
 
 	} else {
