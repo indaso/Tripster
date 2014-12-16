@@ -15,15 +15,18 @@ block content
 
 	p #{message}
 	ul 
-		each r in requests
+		each r, index in requests
 			li=  r 
+			p= trips[index]
 			form(method='post')
 				p To accept his/her friend request:
 				input(type='hidden', name='requester', value=r)
+				input(type='hidden', name='trip', value=trips[index])
 				input(type='hidden', name='response', value='accept')
 				input(type='submit', value='Accept')
 			form(method='post')
 				p To accept his/her friend request:
 				input(type='hidden', name='requester', value=r)
+				input(type='hidden', name='trip', value=trips[index])
 				input(type='hidden', name='response', value='reject')
 				input(type='submit', value='Reject')

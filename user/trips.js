@@ -194,10 +194,9 @@ router.post('/invitefriends', function (req, res) {
 
 	//if user did not invite anyone, go to items page
 	if (!invitees) {
-		res.render('tripitems', {
-			tripid: tripid
-		});
+		res.redirect('/tripitems');
 	}
+
 	var invquery;
 	if (invitees instanceof Array) {
 		//invite each person in that stupid list.
@@ -256,10 +255,10 @@ router.post('/tripitems', function (req, res) {
 			return;
 		}
 
-		var itemq = "SELECT MAX(ITEM_ID) AS MAX FROM ITEMS";
+		var itemq = "SELECT MAX(ITEM_ID) AS MAX FROM ITEM";
 		connection.execute(itemq, [], function (err, results) {
 			if (err) {
-				console.log("Error executing query:", err);
+				console.log("Error executing query1:", err);
 				return;
 			}
 
@@ -268,23 +267,24 @@ router.post('/tripitems', function (req, res) {
 			var insbrings = "INSERT ALL";
 			for (var i = 0; i < itemsarr.length; i++) {
 				var item = itemsarr[i].trim();
-				var itemid = results[0].ITEM_ID + i + 1;
-				query = query + " INTO ITEMS (ITEM_ID, DESCRIPTION) VALUES (" + itemid + ", '" + item + "')";
+				var itemid = results[0].MAX + i + 1;
+				query = query + " INTO ITEM (ITEM_ID, DESCRIPTION) VALUES (" + itemid + ", '" + item + "')";
 				insbrings = insbrings + " INTO BRINGS (TRIP_ID, ITEM_ID) VALUES (" + trip + " , " + itemid + ")";
 			}
 			insbrings = insbrings + " SELECT * FROM dual";
+			query = query + " SELECT * FROM dual";
 			//testing
 			console.log(insbrings);
 			console.log(query);
 			connection.execute(query, [], function (err, results) {
 				if (err) {
-					console.log("Error executing query:", err);
+					console.log("Error executing query2:", err);
 					return;
 				}
 				console.log(results);
 				connection.execute(insbrings, [], function (err, results) {
 					if (err) {
-						console.log("Error executing query:", err);
+						console.log("Error executing query3:", err);
 						return;
 					}
 					console.log(results);
@@ -512,15 +512,16 @@ router.post('/friendstrips', function (req, res) {
 router.get('/respondtripreq', function (req, res) {
 	if (global.currUser.signed_in) {
 		//get pending requests from the database
-		/*oracle.connect(connectData, function (err, connection) {
+		oracle.connect(connectData, function (err, connection) {
 			if (err) {
 				console.log("Error connecting to db:", err);
 				return;
 			}
 			//get users trips and people requesting to be on trips
 			//intersects user's trips with people requests
-			var query = "(SELECT * FROM PLANS WHERE USER_ID='" + global.currUser.username +
-				"' AND (PLAN_ID = 1 OR PLAN_ID = 0)) INTERSECT (SELECT * FROM PLANS WHERE PLAN_ID = 5)";
+			var query = "SELECT USER_ID, TRIP_ID FROM PLANS P WHERE P.PLAN_ID = 5 AND P.TRIP_ID IN (SELECT TRIP_ID ";
+			query = query + "FROM PLANS WHERE USER_ID='" + global.currUser.username + "' AND (PLAN_ID = 0 OR PLAN_ID = 1))";
+			console.log(query);
 			connection.execute(query, [], function (err, results) {
 				if (err) {
 					console.log("Error executing query:", err);
@@ -529,23 +530,31 @@ router.get('/respondtripreq', function (req, res) {
 				console.log(results);
 				connection.close();
 
+				var request = [];
+				var trips = [];
+
 				//if no request:
 				if (results.length === 0) {
 					res.render('respondtripreq', {
-						requests: [],
-						message: "You have no friend requests at the moment"
+						requests: request,
+						trips: trips,
+						message: "You have no request to join your trips at the moment"
 					});
 				}
-				var request = [];
-				var trips = [];
+
 				for (var i = 0; i < results.length; i++) {
-					if (results[i].USER_NAME !== global.currUser.username) {
-						request[i] = results[i].USERNAME;
-						request[i] =
-					}
+					request[i] = results[i].USER_ID;
+					trips[i] = results[i].TRIP_ID;
+				}
+				if (results.length === 0) {
+					res.render('respondtripreq', {
+						requests: request,
+						trips: trips,
+						message: "Some users have requested to join your trips"
+					});
 				}
 			});
-	});*/
+		});
 	} else {
 		//if not logged in, redirect to login page
 		res.redirect('/login');
@@ -553,7 +562,55 @@ router.get('/respondtripreq', function (req, res) {
 });
 
 router.post('/respondtripreq', function (req, res) {
+	var requester = req.body.requester;
+	var trip = req.body.trip;
+	var response = req.body.response;
 
+	if (response == "accept") {
+		var query = "UPDATE PLANS SET PLAN_ID=1 WHERE USER_ID='" + requester + "' AND TRIP_ID='" + trip +
+			"'";
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+				console.log(results); //print for testing
+
+				connection.close();
+				res.render('successmessage', {
+					message: "You have successfully added the user to your trip"
+				});
+			});
+		});
+	} else if (response == "reject") {
+		var delq = "DELETE FROM PLANS WHERE USER_ID='" + requester + "' AND TRIP_ID='" + trip + "'";
+		oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+
+			connection.execute(delq, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+
+				console.log(results); //print for testing
+
+				connection.close();
+				res.render('successmessage', {
+					message: "You have successfully denied the user's request to join your trip"
+				});
+			});
+		});
+	}
 });
 
 
