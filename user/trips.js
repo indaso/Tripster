@@ -92,7 +92,6 @@ router.post('/createtrip', function (req, res) {
 				return;
 			}
 			//if location does not exist in location table, add it
-			var exists;
 			var loc_query = "SELECT * FROM LOCATION WHERE LOCATION_NAME='" + locationname + "'";
 			connection.execute(loc_query, [], function (err, results) {
 				if (err) {
@@ -104,9 +103,7 @@ router.post('/createtrip', function (req, res) {
 					if (!locationtype) {
 						var create_query = "INSERT INTO LOCATION (LOCATION_NAME) VALUES";
 						create_query = create_query + "('" + locationname + "')";
-						console.log(create_query);
 						connection.execute(create_query, [], function (err, results) {
-							console.log('here2');
 							if (err) {
 								console.log('Error executing location query:::', err);
 								return;
@@ -117,9 +114,7 @@ router.post('/createtrip', function (req, res) {
 					} else { //Case 2: Location does exist
 						var create_query2 = "INSERT INTO LOCATION (LOCATION_NAME, LOCATION_TYPE) VALUES";
 						create_query2 = create_query2 + " ('" + locationname + "', '" + locationtype + "')";
-						console.log(create_query2);
 						connection.execute(create_query2, [], function (err, results) {
-							console.log('here2');
 							if (err) {
 								console.log('Error executing location query:', err);
 								return;
@@ -168,7 +163,6 @@ router.post('/createtrip', function (req, res) {
 		});
 
 		//render part II of create trip - invite yo' friends
-		console.log(dropdown);
 		res.redirect('/invitefriends');
 	} else {
 		res.redirect('/login');
@@ -195,8 +189,7 @@ function create_invite(stmt) {
 
 //Invite friends onto our trip
 router.post('/invitefriends', function (req, res) {
-	console.log("here");
-	tripid = 1506; //for now
+	var trip = req.body.tripid;
 	var invitees = req.body.invited;
 
 	//if user did not invite anyone, go to items page
@@ -205,38 +198,103 @@ router.post('/invitefriends', function (req, res) {
 			tripid: tripid
 		});
 	}
-
-	//invite each person in that stupid list.
-	var invquery = "INSERT ALL";
-	for (var i = 0; i < invitees.length; i++) {
-		var invited = invitees[i];
-		console.log("inviting person: " + invited);
-		invquery = invquery + " INTO INVITES (USER_INVITER, USER_INVITEE, TRIP_ID)" + "values('" + global.currUser.username +
-			"', '" + invited + "', " + tripid + ")";
+	var invquery;
+	if (invitees instanceof Array) {
+		//invite each person in that stupid list.
+		invquery = "INSERT ALL";
+		for (var i = 0; i < invitees.length; i++) {
+			var invited = invitees[i];
+			console.log("inviting person: " + invited);
+			invquery = invquery + " INTO INVITES (USER_INVITER, USER_INVITEE, TRIP_ID) " + "values ('" + global.currUser.username +
+				"', '" + invited + "', " + trip + ")";
+		}
+		invquery = invquery + " SELECT * FROM dual";
+	} else {
+		invquery = "INSERT INTO (USER_INVITER, USER_INVITEE, TRIP_ID) VALUES (" + global.currUser.username + ", " +
+			invitees + ", " + trip + ")";
 	}
-	invquery = invquery + " SELECT * FROM dual";
 
 	create_invite(invquery);
 
-	res.redirect('/myprofile');
-	//res.render('tripitems', {
-	//	tripid: tripid
-	//});
+	res.redirect('/tripitems');
 });
 
 //render invite friends page for trips
 router.get('/invitefriends', function (req, res) {
 	console.log(tripid); //make sure i have it
+	if (dropdown.length === 0) {
+		//person has no friends to invite
+		res.redirect('/tripitems');
+	}
+	console.log("dropwdown:");
+	console.log(dropdown);
 	res.render('invitefriends', {
 		tripid: tripid,
 		invitees: dropdown
 	});
 });
 
+router.get('/tripitems', function (req, res) {
+	res.render('tripitems');
+});
+
 //update/create items list of a trip
 router.post('/tripitems', function (req, res) {
+	console.log("here");
 	var items = req.body.items;
+	var trip = tripid;
+	var itemsarr = items.split(',');
 
+	//if no items, just redirect
+	if (itemsarr.length === 0) {
+		res.render('tripcreatedsuccess');
+	}
+
+	oracle.connect(connectData, function (err, connection) {
+		if (err) {
+			console.log("Error connecting to db:", err);
+			return;
+		}
+
+		var itemq = "SELECT MAX(ITEM_ID) AS MAX FROM ITEMS";
+		connection.execute(itemq, [], function (err, results) {
+			if (err) {
+				console.log("Error executing query:", err);
+				return;
+			}
+
+			//Insert items into ITEMS and BRINGSS
+			var query = "INSERT ALL";
+			var insbrings = "INSERT ALL";
+			for (var i = 0; i < itemsarr.length; i++) {
+				var item = itemsarr[i].trim();
+				var itemid = results[0].ITEM_ID + i + 1;
+				query = query + " INTO ITEMS (ITEM_ID, DESCRIPTION) VALUES (" + itemid + ", '" + item + "')";
+				insbrings = insbrings + " INTO BRINGS (TRIP_ID, ITEM_ID) VALUES (" + trip + " , " + itemid + ")";
+			}
+			insbrings = insbrings + " SELECT * FROM dual";
+			//testing
+			console.log(insbrings);
+			console.log(query);
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+				console.log(results);
+				connection.execute(insbrings, [], function (err, results) {
+					if (err) {
+						console.log("Error executing query:", err);
+						return;
+					}
+					console.log(results);
+					connection.close();
+				});
+			});
+		});
+
+		res.render('tripcreatedsuccess');
+	});
 });
 
 //Display clients invites to trips
@@ -450,9 +508,48 @@ router.post('/friendstrips', function (req, res) {
 	});
 });
 
-//respond to trip requests
+//respond to friend's trip requests to join
 router.get('/respondtripreq', function (req, res) {
+	if (global.currUser.signed_in) {
+		//get pending requests from the database
+		/*oracle.connect(connectData, function (err, connection) {
+			if (err) {
+				console.log("Error connecting to db:", err);
+				return;
+			}
+			//get users trips and people requesting to be on trips
+			//intersects user's trips with people requests
+			var query = "(SELECT * FROM PLANS WHERE USER_ID='" + global.currUser.username +
+				"' AND (PLAN_ID = 1 OR PLAN_ID = 0)) INTERSECT (SELECT * FROM PLANS WHERE PLAN_ID = 5)";
+			connection.execute(query, [], function (err, results) {
+				if (err) {
+					console.log("Error executing query:", err);
+					return;
+				}
+				console.log(results);
+				connection.close();
 
+				//if no request:
+				if (results.length === 0) {
+					res.render('respondtripreq', {
+						requests: [],
+						message: "You have no friend requests at the moment"
+					});
+				}
+				var request = [];
+				var trips = [];
+				for (var i = 0; i < results.length; i++) {
+					if (results[i].USER_NAME !== global.currUser.username) {
+						request[i] = results[i].USERNAME;
+						request[i] =
+					}
+				}
+			});
+	});*/
+	} else {
+		//if not logged in, redirect to login page
+		res.redirect('/login');
+	}
 });
 
 router.post('/respondtripreq', function (req, res) {

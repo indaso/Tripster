@@ -327,7 +327,7 @@ router.get('/addfriends', function (req, res) {
 
 
 router.post('/addfriends', function (req, res) {
-	//var friender = your username
+	var friender = global.currUser.username;
 	var friendee = req.body.friendee;
 
 	//Validate that person you are trying to friend exists
@@ -368,7 +368,7 @@ router.post('/addfriends', function (req, res) {
 					//check if friend pair or friend request already exists
 					var friended = "SELECT * FROM FRIENDS_WITH WHERE (FRIEND_ID1 = '" + friender +
 						"' AND FRIEND_ID2 = '" + friendee + "')";
-					friended = friended + "OR (FRIEND_ID1 = '" + friendee + "' AND FRIEND_ID2 = '" + friender + "'";
+					friended = friended + "OR (FRIEND_ID1 = '" + friendee + "' AND FRIEND_ID2 = '" + friender + "')";
 					console.log(friended);
 					connection.execute(friended, [], function (err, results) {
 						if (err) {
@@ -412,6 +412,9 @@ router.post('/addfriends', function (req, res) {
 				});
 			}
 		});
+	});
+	res.render('addfriends', {
+		errormsg: 'Friendrequest sent!'
 	});
 });
 
