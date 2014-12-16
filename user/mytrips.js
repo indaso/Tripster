@@ -462,6 +462,11 @@ function loadpage2(req, res) {
 router.get('/mytrips', function (req, res) {
 	if (global.currUser.signed_in) {
 		loadpage(req, res);
+		trips = [];
+		tripids = [];
+
+		idcount = [];
+		tripObjs = [];
 
 		//tripObjs = [];
 	} else {
@@ -472,7 +477,11 @@ router.get('/mytrips', function (req, res) {
 router.get('/mytrips/:user_id', function (req, res) {
 	if (global.currUser.signed_in) {
 		loadpage2(req, res);
+		trips = [];
+		tripids = [];
 
+		idcount = [];
+		tripObjs = [];
 		//tripObjs = [];
 	} else {
 		res.redirect('/login');
