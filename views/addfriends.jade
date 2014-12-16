@@ -15,3 +15,8 @@ block content
 			label(for='friendee') Who do you want to add?
 			input(type='text', name='friendee')
 		input(type='submit')
+
+	h2 Some people your friends are friends with
+	ul
+		each r in recommendations 
+			li= r

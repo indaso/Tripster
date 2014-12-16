@@ -18,8 +18,39 @@ var connectData = {
 };
 
 router.get('/addfriends', function (req, res) {
-  res.render('addfriends', {
-    errormsg: ''
+  //get friend recommendations 
+  var user = global.currUser.username;
+  oracle.connect(connectData, function (err, connection) {
+    if (err) {
+      console.log("error connecting to db:", err);
+      return;
+    }
+
+    var recfriends = "WITH FRIENDS(FID) AS ((SELECT FRIEND_ID1 FROM FRIENDS_WITH WHERE FRIEND_ID2 = '" +
+      user + "' AND ACCEPTED = 1) UNION (SELECT FRIEND_ID2 FROM FRIENDS_WITH WHERE FRIEND_ID1 = '" + user +
+      "' AND ACCEPTED = 1)) (SELECT FW.FRIEND_ID1 AS FRIEND FROM FRIENDS_WITH FW INNER JOIN FRIENDS F ON FW.FRIEND_ID2 = F.FID" +
+      " WHERE FW.FRIEND_ID1 <> '" + user +
+      "' AND FW.ACCEPTED = 1) UNION (SELECT FW.FRIEND_ID2 AS FRIEND FROM FRIENDS_WITH FW" +
+      " INNER JOIN FRIENDS F ON FW.FRIEND_ID1 = F.FID WHERE FW.FRIEND_ID2 <> '" + user +
+      "' AND FW.ACCEPTED = 1)";
+    console.log(recfriends);
+    connection.execute(recfriends, [], function (err, results) {
+      if (err) {
+        console.log("Error executing query", err);
+        return;
+      }
+      console.log(results);
+
+      var friendsrec = [];
+      for (var i = 0; i < results.length; i++)
+        friendsrec[i] = results[i].FRIEND;
+
+      connection.close();
+      res.render('addfriends', {
+        errormsg: '',
+        recommendations: friendsrec
+      });
+    });
   });
 });
 
@@ -50,12 +81,14 @@ router.post('/addfriends', function (req, res) {
         //Person does not exist
         var mess = "Sorry, we were not able to find: " + friendee + " in out database. Please try again";
         res.render("addfriends", {
-          errormsg: mess
+          errormsg: mess,
+          recommendations: []
         });
       } else if (friendee === friender) { //replace with friender usernamer
         var mess1 = "Sorry, you cannot add yourself";
         res.render("addfriends", {
-          errormsg: mess1
+          errormsg: mess1,
+          recommendations: []
         });
       } else {
         oracle.connect(connectData, function (err, connection) {
@@ -83,12 +116,14 @@ router.post('/addfriends', function (req, res) {
               if (results[0].ACCEPTED == 1) {
                 var mess = "You and " + friendee + " are already friends!";
                 res.render("addfriends", {
-                  errormsg: mess
+                  errormsg: mess,
+                  recommendations: []
                 });
               } else {
                 var mess2 = "You already sent " + friendee + " a friend request!";
                 res.render("addfriends", {
-                  errormsg: mess2
+                  errormsg: mess2,
+                  recommendations: []
                 });
               }
             }
