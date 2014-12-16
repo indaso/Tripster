@@ -1,9 +1,50 @@
 extends layout
 block content
 
-	h1 Current Trips
-	h1 Past Trips
-	h1 Dream Trips
+	h1 List o' Trips
+	p
+		each trip in trips
+			ul 
+				li=("Trip Id: " + trip.tripid + ", Location: " + trip.locationid + ", Album Id: " + trip.albumid)
+				li=("Average rating: " + trip.tratings[0])
+				li="Rating Contributors: "
+
+				each r in trip.traters
+					li=("----" + r)
+				
+				li="Comments on Trip: "
+
+				each tripc in trip.tcomments
+					li=(tripc[0] + " ----- " + tripc[1])
+
+				each c in trip.contents
+					img(src=c, width = '150', height = '130')=c
+
+	h1 Add a Photo!
+	form(method='post')
+		p
+			label(for='albumid') What is the corresponding Album Id? 
+			input(type='text', name='albumid')
+		
+		p
+			label(for='tripid') For which trip? (insert Trip Id) 
+			input(type='text', name='tripid')
+
+		p
+			label(for='privacycontent') Public 
+			input(type='radio', name='privacycontent', checked=privacy=="public", value='public')
+		p
+			label(for='privacycontent') Private
+			input(type='radio', name='privacycontent',  checked=privacy=="private", value='private')
+		p
+			label(for='contentname') Name of picture?  
+			input(type='text', name='contentname')
+		p
+			label(for='content') Post link to picture here.  
+			input(type='text', name='content')
+			
+		input(type='submit')
+	
 	
   
 

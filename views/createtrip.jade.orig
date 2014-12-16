@@ -1,0 +1,57 @@
+extends layout
+block content
+	a(href="/") Home
+	br			
+	a(href="/addfriends") Add Friends
+	br
+	a(href="/editprofile") Edit My Profile 
+	br
+	a(href="/friendrequests") Pending Friend Requests
+	br
+	a(href="/tripinvites") Trip Invites
+	br
+	a(href="/friendstrips") My friends trips
+	br		
+	a(href="/search") Search
+	br
+	a(href="/logout") Logout
+
+	h1 Plan a Trip! 
+	form(method='post')
+		p
+			label(for='locationname') Where do you wanna go? 
+			input(type='text', name='locationname')
+		p
+			label(for="triptype") Is this a real trip?
+			input(type='radio', name='planid', checked=type=="dream",value=1)
+		p
+			label(for="triptype") Or a dream trip?
+			input(type='radio', name='planid', checked=type=="real", value=0) 
+
+		p
+			label(for='locationtype') Type of Location? 
+			input(type='text', name='locationtype')
+
+		p
+			label(for='privacycontent') Public 
+			input(type='radio', name='privacycontent', checked=privacy=="public", value='public')
+		p
+			label(for='privacycontent') Private
+<<<<<<< HEAD
+			input(type='radio', name='privacycontent',  checked=privacy=="real", value='private')			
+=======
+			input(type='radio', name='privacycontent',  checked=privacy=="private", value='private')
+
+		p
+			label(for='items') What items do you need? (seperate by commas)
+			input(type='text', name='items')
+
+		p
+			label(for='album') Name of album associated with trip? 
+			input(type='text', name='album')
+		p
+			label(for='content') Post links to pictures and videos here, seperated by comma. 
+			input(type='text', name='content')
+			
+>>>>>>> rating
+		input(type='submit')

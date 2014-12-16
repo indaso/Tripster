@@ -207,14 +207,12 @@ router.get('/myprofile', function (req, res) {
 				uniqueTripsIds = [];
 				uniquePics = [];
 
-				//console.log("Rendered page, dropdown: " + dropdown);
-
 			});
 		});
-	} else {
-		//if not logged in, redirect to login page
-		res.redirect('/login');
-	}
+} else {
+	//if not logged in, redirect to login page
+	res.redirect('/login');
+}
 });
 
 router.get('/myprofile/:user_id', function (req, res) {
