@@ -17,6 +17,7 @@ block content
 		p
 			label(for="invitees") Friends:
 			each invitee in invitees
-				p
-					input(type="checkbox", name="invited", value='#{invitee}')=invitee
+				p= invitee
+					input(type="checkbox", name="invited", value='#{invitee}')
+		input(type='submit')
 
